@@ -1,0 +1,8 @@
+name: TCDestinations
+version: '${project.version}'
+main: de.crafttogether.TCDestinations
+api-version: 1.17
+depend: [ BKCommonLib, Train_Carts ]
+authors: [ J0schlZ, Ceddix ]
+description: Managing destinations in a more advanced way.
+website: https://github.com/CraftTogetherMC

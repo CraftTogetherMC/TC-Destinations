@@ -1,0 +1,10 @@
+Settings:
+  ServerName: lobby
+  Debug: false
+MySQL:
+  Host: 127.0.0.1
+  Port: 3306
+  Database: database
+  Username: username
+  Password: password
+  TablePrefix: ct_
