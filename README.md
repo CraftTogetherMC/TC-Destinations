@@ -1,17 +1,17 @@
 # TC-Destinations
-#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts), [MySQLAdapter](https://ci.craft-together-mc.de/job/MySQLAdapter)  
+#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts)
 
 
-TC-Destinations is a plugin for minecraft servers using [Bukkit](https://bukkit.org), [SpigotMC](https://www.spigotmc.org) or [PaperMC](https://papermc.io).  
-It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and serves the purpose of managing destinations in a more advanced way.  
+TC-Destinations is a plugin for minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
+It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and comes along with a bunch of features to manage destinations in a more advanced way.  
+   
+This plugin was developed for the [CraftTogetherMC](https://github.com/CraftTogetherMC) minecraft-server, see also: [TC-Portals](https://github.com/CraftTogetherMC/TC-Potals)!  
+   
+### A big thank you and lots of love go out to [TeamBergerhealer](https://github.com/bergerhealer)  
+Also a lot of appreciation goes to the People behind [Cloud](https://github.com/Incendo/cloud) and [Adventure](https://github.com/KyoriPowered/adventure)!  
   
-This plugin  was created during the development of the [CraftBahn](https://github.com/CraftTogetherMC/CraftBahn) plugin for our [CraftTogetherMC](https://github.com/CraftTogetherMC) server, which includes the features of this plugin and also offers additional TrainCarts-related features, such as cross-server portals for BungeeCord ([TC-Portals](https://github.com/CraftTogetherMC/CraftBahn/tree/tc-portals)).
-
-### A big thank you and lots of love go out to [TeamBergerhealer](https://github.com/bergerhealer)
-Also a lot of appreciation goes to the People behind [Cloud](https://github.com/Incendo/cloud) and [Adventure](https://github.com/KyoriPowered/adventure)!
-
-#### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)
-
+#### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)  
+  
 ### Features:
 - Fancy paginated list of destinations
 - Choose a destination for your train with `/destination` and get appropriate feedback.
@@ -21,7 +21,7 @@ Also a lot of appreciation goes to the People behind [Cloud](https://github.com/
 - All texts can be customized *(localization.yml)*
 
 ### Commands & Permissions:
-   
+
 #### Select Destination
 | Command                         | Permissions                           | Description                                                                       |
 |:--------------------------------|:--------------------------------------|:----------------------------------------------------------------------------------|
@@ -29,7 +29,7 @@ Also a lot of appreciation goes to the People behind [Cloud](https://github.com/
 | `/destination <name>`           | craftbahn.command.destination         | Sets the specified destination to the currently selected train                    |
 | `/destinations [type]`          | craftbahn.command.destinations        | Shows a list of all destinations                                                  |
 | `/destinations [type] [filter]` | craftbahn.command.destinations.filter | Shows a filtered list of all destinations **Filter flags:** `--server` `--player` |  
-   
+
 #### Manage destinations
 | Command                                                  | Permissions                             | Description                                                                                                                |
 |:---------------------------------------------------------|:----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
@@ -53,16 +53,16 @@ Also a lot of appreciation goes to the People behind [Cloud](https://github.com/
 | `/mobenter [radius]`  | craftbahn.command.mobenter | Allows animals around the selected train to board the train |
 | `/mobeject`           | craftbahn.command.mobeject | Ejects all animals from the selected train                  |
 
-### Libraries used 
+### Libraries used
 - [BKCommonLib](https://github.com/bergerhealer) (Extensive plugin library)
 - [Cloud](https://github.com/Incendo/cloud) (Command Framework)
 - [Adventure](https://github.com/KyoriPowered/adventure) (UI Framework)
-  
-  
+
+
 ### MySQL Table-structure:
 
 ``` sql
-CREATE TABLE `cb_destinations` (
+CREATE TABLE `ct_destinations` (
   `id` int(11) NOT NULL,
   `name` varchar(24) NOT NULL,
   `type` varchar(24) NOT NULL,
@@ -79,10 +79,10 @@ CREATE TABLE `cb_destinations` (
   `tp_z` double DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE `cb_destinations`
+ALTER TABLE `ct_destinations`
   ADD PRIMARY KEY (`id`);
 
-ALTER TABLE `cb_destinations`
+ALTER TABLE `ct_destinations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 COMMIT;
