@@ -7,4 +7,31 @@ MySQL:
   Database: database
   Username: username
   Password: password
-  TablePrefix: ct_
+  TablePrefix: tc_
+DestinationTypeAll:
+  DisplayName: Alle
+  DisplayNameColor: yellow
+DestinationTypes:
+  - Name: station
+    DisplayName: Bahnhof
+    DisplayNameColor: yellow
+    ShowOwnerInformations: false
+    DynmapIcon: rail.png
+
+  - Name: main_station
+    DisplayName: Hauptbahnhof
+    DisplayNameColor: yellow
+    ShowOwnerInformations: false
+    DynmapIcon: rail.png
+
+  - Name: public_station
+    DisplayName: Öffentlich
+    DisplayNameColor: gold
+    ShowOwnerInformations: true
+    DynmapIcon: minecart.png
+
+  - Name: player_station
+    DisplayName: Spielerbahnhof
+    DisplayNameColor: gold
+    ShowOwnerInformations: true
+    DynmapIcon: minecart.png

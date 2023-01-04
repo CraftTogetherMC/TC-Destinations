@@ -5,6 +5,7 @@ import de.crafttogether.mysql.MySQLConfig;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
+import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.localization.LocalizationManager;
 import de.crafttogether.tcdestinations.util.Util;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -53,15 +54,15 @@ public final class TCDestinations extends JavaPlugin {
             dynmap = (DynmapAPI) Bukkit.getServer().getPluginManager().getPlugin("dynmap");
         }
 
-        // Create default config
-        saveDefaultConfig();
-
         // Export resources
         Util.exportResource("commands.yml");
         if (dynmap != null) {
             Util.exportResource("minecart.png");
             Util.exportResource("rail.png");
         }
+
+        // Create default config
+        saveDefaultConfig();
 
         // Setup MySQLConfig
         MySQLConfig myCfg = new MySQLConfig();
@@ -84,15 +85,18 @@ public final class TCDestinations extends JavaPlugin {
         // Initialize MySQLAdapter
         mySQLAdapter = new MySQLAdapter(this, myCfg);
 
+        // Register DestinationTypes from config.yml
+        DestinationType.registerTypes(getConfig());
+
+        // Initialize Storage
+        destinationStorage = new DestinationStorage();
+
         // Initialize LocalizationManager
         localizationManager = new LocalizationManager();
 
         // Register Commands
         commands = new Commands();
         commands.enable(this);
-
-        // Initialize Storage
-        destinationStorage = new DestinationStorage();
 
         // Register Tags/Placeholder for MiniMessage
         miniMessageParser = MiniMessage.builder()

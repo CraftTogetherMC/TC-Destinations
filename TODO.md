@@ -1,4 +1,4 @@
 # TODO
 
-- Make destination-categories configurable
+- ~~Make destination-categories configurable~~
 - Translate Localization.class

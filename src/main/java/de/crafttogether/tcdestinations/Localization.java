@@ -8,12 +8,6 @@ public class Localization extends LocalizationEnum {
     public static final Localization HEADER = new Localization("header", "<yellow>--------------</yellow> <red><bold>CraftBahn</bold></red> <yellow>--------------<yellow/>");
     public static final Localization FOOTER = new Localization("footer", "<yellow>----------------------------------------</yellow>");
 
-    public static final Localization DESTINATIONTYPE_ALL = new Localization("destinationtype.all", "Alle");
-    public static final Localization DESTINATIONTYPE_STATION = new Localization("destinationtype.station", "Bahnhof");
-    public static final Localization DESTINATIONTYPE_MAIN_STATION = new Localization("destinationtype.main_station", "Hauptbahnhof");
-    public static final Localization DESTINATIONTYPE_PLAYER_STATION = new Localization("destinationtype.player_station", "Spielerbahnhof");
-    public static final Localization DESTINATIONTYPE_PUBLIC_STATION = new Localization("destinationtype.public_station", "Öffentlich");
-
     public static final Localization COMMAND_NOPERM = new Localization("command.noperm", "<red>Dazu hast du keine Berechtigung</red>");
     public static final Localization COMMAND_NOTRAIN = new Localization("command.notrain", "<prefix/><red>Bitte setze dich zuerst in einen Zug.</red>");
 
@@ -41,7 +35,7 @@ public class Localization extends LocalizationEnum {
                 
                 <footer/>""");
 
-    public static final Localization COMMAND_DESTINATIONS_HEAD = new Localization("command.destinations.head",
+    public static final Localization COMMAND_DESTINATIONS_HEAD_CONTENT = new Localization("command.destinations.head.content",
             """
                 <header/>
 
@@ -51,18 +45,14 @@ public class Localization extends LocalizationEnum {
                 <prefix/>
                 <prefix/><gold><bold>Mögliche Fahrziele:</bold></gold>
                 <prefix/>
-                <prefix/><hover:show_text:'<green>{cmd_destinations} {main_station}</green>'><click:run_command:{cmd_destinations} {main_station}><green>» </green><yellow>Hauptbahnhöfe</yellow></click></hover>
-                <prefix/><hover:show_text:'<green>{cmd_destinations} {station}</green>'><click:run_command:{cmd_destinations} {station}><green>» </green><yellow>Bahnhöfe</yellow></click></hover>
-                <prefix/><hover:show_text:'<green>{cmd_destinations} {player_station}</green>'><click:run_command:{cmd_destinations} {player_station}><green>» </green><yellow>Spielerbahnhöfe</yellow></click></hover>
-                <prefix/><hover:show_text:'<green>{cmd_destinations} {public_station}</green>'><click:run_command:{cmd_destinations} {public_station}><green>» </green><yellow>Öffentliche Ziele</yellow></click></hover>
-                """);
+                <types/>""");
+    public static final Localization COMMAND_DESTINATIONS_HEAD_DESTINATIONTYPE = new Localization("command.destinations.head.destinationtype", "<prefix/><hover:show_text:'<green>{cmd_destinations} {displayName}</green>'><click:run_command:{cmd_destinations} {displayName}><green> > </green>{displayName}</click></hover>");
+
     public static final Localization COMMAND_DESTINATIONS_LIST_INVALIDPAGE = new Localization("command.destinations.list.invalidpage", "<prefix/><red>Ungültige Seitennummer.</red>");
     public static final Localization COMMAND_DESTINATIONS_LIST_UNKOWNPAGE = new Localization("command.destinations.list.unkownpage", "<prefix/><red>Es gibt nur {pages} Seite(n).</red>");
     public static final Localization COMMAND_DESTINATIONS_LIST_EMPTY = new Localization("command.destinations.list.empty", "<prefix/><red>Es wurden keine Fahrziele zu dieser Auswahl gefunden.</red>");
     public static final Localization COMMAND_DESTINATIONS_LIST_INDICATOR = new Localization("command.destinations.list.indicator", " <green>{actual} <green>/<green> <green>{total}</green> ");
     public static final Localization COMMAND_DESTINATIONS_LIST_CAPTION = new Localization("command.destinations.list.caption", "<prefix/><gray> # </gray><gold><bold>{server}</bold></gold>");
-    public static final Localization COMMAND_DESTINATIONS_LIST_ENTRY_PLAYER = new Localization("command.destinations.list.entry.player", "<yellow>{destination}</yellow>");
-    public static final Localization COMMAND_DESTINATIONS_LIST_ENTRY_OTHER = new Localization("command.destinations.list.entry.other", "<gold>{destination}</gold>");
     public static final Localization COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_CAPTION = new Localization("command.destinations.list.entry.hover.caption", "<green>{command}</green>");
     public static final Localization COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_TYPE = new Localization("command.destinations.list.entry.hover.type", "<gold>Stations-Typ: </gold><yellow>{type}</yellow>");
     public static final Localization COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_OWNER = new Localization("command.destinations.list.entry.hover.owner", "<gold>Besitzer: </gold><yellow>{owner}</yellow>");

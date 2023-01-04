@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
+import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import org.bukkit.Bukkit;
@@ -23,7 +24,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,10 +76,10 @@ public class Commands {
         });
 
         cloud.suggest("destinationType", (context, input) -> {
-            List<String> result =  Arrays.stream(Destination.DestinationType.values())
-                    .map(Destination.DestinationType::toString)
+            List<String> result = DestinationType.getTypes().stream()
+                    .map(DestinationType::getDisplayName)
                     .collect(Collectors.toList());
-            result.add(Localization.DESTINATIONTYPE_ALL.get());
+            result.add(plugin.getConfig().getString("DestinationTypeAll.DisplayName"));
             return result;
         });
 

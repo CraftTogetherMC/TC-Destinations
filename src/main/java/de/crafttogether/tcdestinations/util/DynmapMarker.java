@@ -42,7 +42,7 @@ public class DynmapMarker {
         if (!dest.getServer().equalsIgnoreCase(plugin.getServerName()))
             return;
 
-        MarkerSet set = plugin.getDynmap().getMarkerAPI().getMarkerSet("CB_" + dest.getType().name());
+        MarkerSet set = plugin.getDynmap().getMarkerAPI().getMarkerSet("CB_" + dest.getType().getDisplayName());
         if (set == null)
             return;
 
@@ -64,11 +64,11 @@ public class DynmapMarker {
             return false;
 
         MarkerAPI markers = dynmap.getMarkerAPI();
-        MarkerSet set = markers.getMarkerSet("CT_" + destination.getType().name());
+        MarkerSet set = markers.getMarkerSet("TC_" + destination.getType().getDisplayName());
 
         // Create MarkerSet if not exists
         if (set == null)
-            set = dynmap.getMarkerAPI().createMarkerSet("CT_" + destination.getType().name(), destination.getType().toString(), null, true);
+            set = dynmap.getMarkerAPI().createMarkerSet("TC_" + destination.getType().getDisplayName(), destination.getType().getName(), null, true);
 
         // Delete Marker if already exists
         Marker marker = set.findMarker(destination.getName());
@@ -107,7 +107,7 @@ public class DynmapMarker {
         owner = participants.isEmpty() ? "" : participants.toString().substring(0, participants.length() - 2);
 
         icon = minecartIcon;
-        switch (destination.getType().name()) {
+        switch (destination.getType().getDisplayName()) {
             case "STATION", "MAIN_STATION", "PUBLIC_STATION" -> {
                 color = "#ffaa00";
                 icon = railIcon;

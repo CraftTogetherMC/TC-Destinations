@@ -1,10 +1,9 @@
 package de.crafttogether.tcdestinations.destinations;
 
-import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.util.CTLocation;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,45 +14,17 @@ public class Destination {
     private String world = null;
     private UUID owner = null;
     private List<UUID> participants = new ArrayList<>();
-    private Enum<?> type = null;
+    private DestinationType type = null;
     private CTLocation location = null;
     private CTLocation teleportLocation = null;
     private Boolean isPublic = null;
-
-    public enum DestinationType {
-        STATION {
-            @Override
-            public String toString() {
-                return Localization.DESTINATIONTYPE_STATION.get();
-            }
-        },
-
-        MAIN_STATION {
-            @Override
-            public String toString() {
-                return Localization.DESTINATIONTYPE_MAIN_STATION.get();
-            }
-        },
-
-        PLAYER_STATION {
-            @Override
-            public String toString() {
-                return Localization.DESTINATIONTYPE_PLAYER_STATION.get();
-            }
-        },
-
-        PUBLIC_STATION {
-            @Override
-            public String toString() { return Localization.DESTINATIONTYPE_PUBLIC_STATION.get(); }
-        }
-    }
 
     public Destination(String name, Integer id) {
         this.id = id;
         this.name = name;
     }
 
-    public Destination(String name, String server, String world, UUID owner, List<UUID> participants, Enum<?> type, CTLocation location, CTLocation teleportLocation, Boolean isPublic) {
+    public Destination(String name, String server, String world, UUID owner, List<UUID> participants, DestinationType type, CTLocation location, CTLocation teleportLocation, Boolean isPublic) {
         this.name = name;
         this.server = server;
         this.world = world;
@@ -85,7 +56,7 @@ public class Destination {
 
     public List<UUID> getParticipants() { return participants; }
 
-    public Enum<?> getType() {
+    public DestinationType getType() {
         return this.type;
     }
 
@@ -123,21 +94,8 @@ public class Destination {
 
     public void removeParticipant(UUID uuid) { this.participants.remove(uuid); }
 
-    public void setType(Enum<?> type) {
-        if (type != DestinationType.MAIN_STATION && type != DestinationType.PLAYER_STATION && type != DestinationType.STATION && type != DestinationType.PUBLIC_STATION)
-            return;
-
+    public void setType(DestinationType type) {
         this.type = type;
-    }
-
-    public void setType(String type) {
-        if (!type.equalsIgnoreCase("MAIN_STATION")
-                && !type.equalsIgnoreCase("PLAYER_STATION")
-                && !type.equalsIgnoreCase("PUBLIC_STATION")
-                && !type.equalsIgnoreCase("STATION"))
-            return;
-
-        this.type = DestinationType.valueOf(type);
     }
 
     public void setLocation(CTLocation location) {
@@ -150,13 +108,6 @@ public class Destination {
 
     public void setPublic(Boolean isPublic) {
         this.isPublic = isPublic;
-    }
-
-    public static DestinationType findType(String label) {
-        List<DestinationType> result = Arrays.stream(DestinationType.values())
-                .filter(destinationType -> destinationType.toString().equals(label))
-                .toList();
-        return result.get(0);
     }
 
     public String toString() {

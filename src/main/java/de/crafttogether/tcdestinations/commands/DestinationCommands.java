@@ -8,6 +8,7 @@ import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationList;
+import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
 import de.crafttogether.tcdestinations.util.CTLocation;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
@@ -135,21 +136,23 @@ public class DestinationCommands {
         Boolean showContentsPage = true;
 
         // Filter: destinationType
-        if (type != null && !type.isEmpty() && !type.equalsIgnoreCase(Localization.DESTINATIONTYPE_ALL.get())) {
+        if (type != null && !type.isEmpty() && !type.equalsIgnoreCase(plugin.getConfig().getString("DestinationTypeAll.DisplayName"))) {
             commandFlags = " " + type;
             showContentsPage = false;
             result = result.stream()
-                    .filter(d -> d.getType().toString().equalsIgnoreCase(type))
+                    .filter(d -> d.getType().getDisplayName().equalsIgnoreCase(type))
                     .toList();
         }
         else
-            commandFlags = " " + Localization.DESTINATIONTYPE_ALL.get();
+            commandFlags = " " + plugin.getConfig().getString("DestinationTypeAll.DisplayName");
+
+        if (type != null && type.equalsIgnoreCase(plugin.getConfig().getString("DestinationTypeAll.DisplayName")))
+            showContentsPage = false;
 
         // Filter: player
         if (player != null && !player.isEmpty()) {
-            if (Util.getOfflinePlayer(player) == null) {
+            if (Util.getOfflinePlayer(player) == null)
                 return;
-            }
 
             commandFlags += " --player " + player;
             showContentsPage = false;
@@ -250,7 +253,11 @@ public class DestinationCommands {
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="type", suggestions="destinationType") String type
     ) {
-        Destination.DestinationType destinationType = Destination.findType(type);
+        DestinationType destinationType = DestinationType.getFromName(type);
+
+        if (destinationType == null)
+            destinationType = DestinationType.getFromDisplayName(type);
+
         if (destinationType == null) {
             Localization.COMMAND_DESTEDIT_ADD_INVALIDTYPE.message(sender);
             return;
@@ -262,7 +269,8 @@ public class DestinationCommands {
                         PlaceholderResolver.resolver("error", err.getMessage()));
             else
                 Localization.COMMAND_DESTEDIT_ADD_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", dest.getName()));
+                        PlaceholderResolver.resolver("destination", dest.getName()),
+                        PlaceholderResolver.resolver("id", String.valueOf(dest.getId())));
         });
     }
 
@@ -465,7 +473,11 @@ public class DestinationCommands {
             final @Argument(value="type", suggestions="destinationType") String type,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination.DestinationType destinationType = Destination.findType(type);
+        DestinationType destinationType = DestinationType.getFromName(type);
+
+        if (destinationType == null)
+            destinationType = DestinationType.getFromDisplayName(type);
+
         if (destinationType == null) {
             Localization.COMMAND_DESTEDIT_ADD_INVALIDTYPE.message(sender);
             return;
@@ -474,6 +486,7 @@ public class DestinationCommands {
         Destination destination = findDestination(sender, name, server);
         destination.setType(destinationType);
 
+        DestinationType finalDestinationType = destinationType;
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
@@ -481,7 +494,7 @@ public class DestinationCommands {
             else {
                 Localization.COMMAND_DESTEDIT_SETTYPE_SUCCESS.message(sender,
                         PlaceholderResolver.resolver("destination", destination.getName()),
-                        PlaceholderResolver.resolver("type", destinationType.toString()));
+                        PlaceholderResolver.resolver("type", finalDestinationType.getDisplayName()));
             }
         });
     }

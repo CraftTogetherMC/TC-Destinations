@@ -8,6 +8,7 @@ import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import com.bergerkiller.bukkit.common.utils.CommonUtil;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.Localization;
+import de.crafttogether.tcdestinations.destinations.DestinationType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class LocalizationManager {
         this.localizationconfig.addHeader("https://docs.adventure.kyori.net/minimessage/format.html");
         this.localizationconfig.addHeader("");
         this.localizationconfig.addHeader("There are also placeholders which can be used in every message.");
-        this.localizationconfig.addHeader("StationType-Labels: {all} {station} {main_station} {player_station} {public_station}");
+        this.localizationconfig.addHeader("StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)");
         this.localizationconfig.addHeader("Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}");
         this.localizationconfig.addHeader("Content: <header/> <prefix/> <footer/>");
 
@@ -47,16 +48,19 @@ public class LocalizationManager {
 
     public static List<PlaceholderResolver> getGlobalPlaceholders() {
         List<PlaceholderResolver> resolvers = new ArrayList<>();
-        resolvers.add(PlaceholderResolver.resolver("all", Localization.DESTINATIONTYPE_ALL.get()));
-        resolvers.add(PlaceholderResolver.resolver("station", Localization.DESTINATIONTYPE_STATION.get()));
-        resolvers.add(PlaceholderResolver.resolver("main_station", Localization.DESTINATIONTYPE_MAIN_STATION.get()));
-        resolvers.add(PlaceholderResolver.resolver("player_station", Localization.DESTINATIONTYPE_PLAYER_STATION.get()));
-        resolvers.add(PlaceholderResolver.resolver("public_station", Localization.DESTINATIONTYPE_PUBLIC_STATION.get()));
         resolvers.add(PlaceholderResolver.resolver("cmd_destination", "/" + plugin.getCommandManager().getConfig().get("commands.destinations")));
         resolvers.add(PlaceholderResolver.resolver("cmd_destinations", "/" + plugin.getCommandManager().getConfig().get("commands.destinations")));
         resolvers.add(PlaceholderResolver.resolver("cmd_destedit", "/" + plugin.getCommandManager().getConfig().get("commands.destedit")));
         resolvers.add(PlaceholderResolver.resolver("cmd_mobenter", "/" + plugin.getCommandManager().getConfig().get("commands.mobenter")));
         resolvers.add(PlaceholderResolver.resolver("cmd_mobeject", "/" + plugin.getCommandManager().getConfig().get("commands.mobeject")));
+
+        // Add DestinationTypes
+        String displayName = plugin.getConfig().getString("DestinationTypeAll.DisplayName");
+        resolvers.add(PlaceholderResolver.resolver("all", displayName));
+
+        for (DestinationType destinationType : DestinationType.getTypes())
+            resolvers.add(PlaceholderResolver.resolver(destinationType.getName(), destinationType.getDisplayName()));
+
         return resolvers;
     }
 

@@ -6,6 +6,9 @@ import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -36,10 +39,29 @@ public class DestinationList {
 
     public void build() {
         int row = 0;
-        Component page = Component.text("");
+        Component page = Component.empty();
 
-        if (this.showContentsPage)
-            this.pages.add(Localization.COMMAND_DESTINATIONS_HEAD.deserialize());
+        if (this.showContentsPage) {
+            String msg = Localization.COMMAND_DESTINATIONS_HEAD_CONTENT.get();
+
+            String colorName = plugin.getConfig().getString("DestinationTypeAll.DisplayNameColor");
+            Component list = Localization.COMMAND_DESTINATIONS_HEAD_DESTINATIONTYPE.deserialize(
+                            PlaceholderResolver.resolver("displayName", plugin.getConfig().getString("DestinationTypeAll.DisplayName")))
+                    .color(NamedTextColor.NAMES.value(colorName == null ? "white" : colorName))
+                    .append(Component.newline());
+
+            for (DestinationType type : DestinationType.getTypes()) {
+                Component btnType = Localization.COMMAND_DESTINATIONS_HEAD_DESTINATIONTYPE.deserialize(
+                                PlaceholderResolver.resolver("displayName", type.getDisplayName()))
+                        .color(type.getDisplayNameColor())
+                        .append(Component.newline());
+
+                list = list.append(btnType);
+            }
+
+            this.pages.add(plugin.getMiniMessageParser().deserialize(msg,
+                    TagResolver.resolver("types", Tag.selfClosingInserting(list))));
+        }
 
         TreeMap<String, List<Destination>> serverMap = new TreeMap<>();
         for (Destination dest : this.destinations) {
@@ -71,7 +93,7 @@ public class DestinationList {
             if ((this.rowsPerPage - row) < 4) {
                 // New Page
                 this.pages.add(page);
-                page = Component.text("");
+                page = Component.empty();
                 row = 0;
             }
 
@@ -91,13 +113,8 @@ public class DestinationList {
             for (Destination dest : serverMap.get(serverName)) {
                 row++;
 
-                Component btnDestination;
-                PlaceholderResolver placeholderResolver = PlaceholderResolver.resolver("destination", dest.getName());
-
-                if (dest.getType() == Destination.DestinationType.PLAYER_STATION)
-                    btnDestination = Localization.COMMAND_DESTINATIONS_LIST_ENTRY_PLAYER.deserialize(placeholderResolver);
-                else
-                    btnDestination = Localization.COMMAND_DESTINATIONS_LIST_ENTRY_OTHER.deserialize(placeholderResolver);
+                Component btnDestination = Component.text(dest.getName())
+                        .color(dest.getType().getDisplayNameColor());
 
                 Collection<Destination> duplicates = TCDestinations.plugin.getDestinationStorage().getDestinations(dest.getName());
                 Component hoverText = Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_CAPTION.deserialize(
@@ -105,9 +122,9 @@ public class DestinationList {
 
                 if (this.showType)
                     hoverText = hoverText.append(Component.newline()).append(Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_TYPE.deserialize(
-                            PlaceholderResolver.resolver("type", dest.getType().toString())));
+                            PlaceholderResolver.resolver("type", dest.getType().getDisplayName())));
 
-                if ((dest.getType().equals(Destination.DestinationType.PLAYER_STATION) || dest.getType().equals(Destination.DestinationType.PUBLIC_STATION)) && dest.getOwner() != null && this.showOwner) {
+                if (dest.getOwner() != null && dest.getType().showOwnerInformations() && this.showOwner) {
                     OfflinePlayer owner = Bukkit.getOfflinePlayer(dest.getOwner());
                     String unkown = Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_OWNERUNKOWN.get();
                     StringBuilder strOwner = new StringBuilder((owner.hasPlayedBefore() ? owner.getName() : unkown) + ", ");
@@ -146,7 +163,7 @@ public class DestinationList {
                 // New Page
                 if (row >= this.rowsPerPage && serverMap.get(serverName).size() > items) {
                     this.pages.add(page);
-                    page = Component.text("");
+                    page = Component.empty();
                     row = 0;
                 }
             }
