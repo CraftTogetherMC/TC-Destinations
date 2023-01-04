@@ -1,6 +1,7 @@
 Settings:
   ServerName: lobby
   Debug: false
+
 MySQL:
   Host: 127.0.0.1
   Port: 3306
@@ -8,9 +9,11 @@ MySQL:
   Username: username
   Password: password
   TablePrefix: tc_
+
 DestinationTypeAll:
   DisplayName: Alle
   DisplayNameColor: yellow
+
 DestinationTypes:
   - Name: station
     DisplayName: Bahnhof
