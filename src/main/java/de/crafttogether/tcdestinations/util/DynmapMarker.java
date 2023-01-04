@@ -1,7 +1,11 @@
 package de.crafttogether.tcdestinations.util;
 
 import de.crafttogether.TCDestinations;
+import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
+import de.crafttogether.tcdestinations.localization.LocalizationManager;
+import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -12,7 +16,12 @@ import org.dynmap.markers.MarkerIcon;
 import org.dynmap.markers.MarkerSet;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public class DynmapMarker {
@@ -42,7 +51,7 @@ public class DynmapMarker {
         if (!dest.getServer().equalsIgnoreCase(plugin.getServerName()))
             return;
 
-        MarkerSet set = plugin.getDynmap().getMarkerAPI().getMarkerSet("CB_" + dest.getType().getDisplayName());
+        MarkerSet set = plugin.getDynmap().getMarkerAPI().getMarkerSet("TC_" + dest.getType().getDisplayName());
         if (set == null)
             return;
 
@@ -64,11 +73,11 @@ public class DynmapMarker {
             return false;
 
         MarkerAPI markers = dynmap.getMarkerAPI();
-        MarkerSet set = markers.getMarkerSet("TC_" + destination.getType().getDisplayName());
+        MarkerSet set = markers.getMarkerSet("TC_" + destination.getType().getName());
 
         // Create MarkerSet if not exists
         if (set == null)
-            set = dynmap.getMarkerAPI().createMarkerSet("TC_" + destination.getType().getDisplayName(), destination.getType().getName(), null, true);
+            set = dynmap.getMarkerAPI().createMarkerSet("TC_" + destination.getType().getName(), destination.getType().getDisplayName(), null, true);
 
         // Delete Marker if already exists
         Marker marker = set.findMarker(destination.getName());
@@ -85,49 +94,60 @@ public class DynmapMarker {
             return false;
         }
 
-        MarkerIcon icon, railIcon, minecartIcon;
-        String label, owner, color = null;
-        boolean showOwner = true;
+        // Load icon
+        MarkerIcon markerIcon = getIcon(markers, destination);
 
-        // Load icons
-        railIcon = markers.getMarkerIcon("cbRail");
-        if (railIcon == null)
-            railIcon = markers.createMarkerIcon("cbRail", "Rail", plugin.getResource(plugin.getDataFolder() + File.separator + "rail.png"));
+        if (markerIcon == null) {
+            plugin.getLogger().warning("Error: Unable to create marker for  '" + destination.getName() + "'. File '" + destination.getType().getIcon() + "' could not be loaded");
+            return false;
+        }
 
-        minecartIcon = markers.getMarkerIcon("cbMinecart");
-        if (minecartIcon == null)
-            minecartIcon = markers.createMarkerIcon("cbMinecart", "Minecart", plugin.getResource(plugin.getDataFolder() + File.separator + "minecart.png"));
-
+        // List owners & participants
+        String owner;
         StringBuilder participants = new StringBuilder(Bukkit.getOfflinePlayer(destination.getOwner()).getName() + ", ");
         for (UUID uuid : destination.getParticipants()) {
             OfflinePlayer participant = Bukkit.getOfflinePlayer(uuid);
             if (!participant.hasPlayedBefore()) continue;
             participants.append(participant.getName()).append(", ");
         }
-        owner = participants.isEmpty() ? "" : participants.toString().substring(0, participants.length() - 2);
+        owner = participants.isEmpty() ? "" : participants.substring(0, participants.length() - 2);
 
-        icon = minecartIcon;
-        switch (destination.getType().getDisplayName()) {
-            case "STATION", "MAIN_STATION", "PUBLIC_STATION" -> {
-                color = "#ffaa00";
-                icon = railIcon;
-                showOwner = false;
-            }
-            case "PLAYER_STATION" ->  color = "#ffff55";
-        }
+        String markerHTML = Localization.DYNMAP_MARKER.get();
+        List<PlaceholderResolver> resolvers = new ArrayList<>();
 
-        label = "<div style=\"z-index:99999\">" +
-                    "<div style=\"padding:6px\">" +
-                        "<h3 style=\"padding:0px;margin:0px;color:" + color + "\">" + destination.getName() + "</h3>" +
-                        "<span style=\"font-weight:bold;color:#aaaaaa;\">Stations-Typ:</span> " + destination.getType() + "<br>" +
-                        (showOwner ? ("<span style=\"font-weight:bold;color:#aaaaaa;\">Besitzer:</span> " + owner + "<br>") : "") +
-                        "<span style=\"font-style:italic;font-weight:bold;color:#ffaa00\">/fahrziel <span style=\"color:#ffff55\">" + destination.getName() + "</span></span>" +
-                        "</div>" +
-                "</div>";
+        resolvers.add(PlaceholderResolver.resolver("id", String.valueOf(destination.getId())));
+        resolvers.add(PlaceholderResolver.resolver("name", destination.getName()));
+        resolvers.add(PlaceholderResolver.resolver("type", destination.getType().getDisplayName()));
+        resolvers.add(PlaceholderResolver.resolver("owner", owner));
+        resolvers.add(PlaceholderResolver.resolver("displayOwner", destination.getType().showOwnerInformations() ? "inline" : "none"));
+        resolvers.add(PlaceholderResolver.resolver("color", destination.getType().getDisplayNameColor().asHexString()));
+        resolvers.add(PlaceholderResolver.resolver("world", destination.getWorld()));
+        resolvers.add(PlaceholderResolver.resolver("server", destination.getServer()));
+        resolvers.addAll(LocalizationManager.getGlobalPlaceholders());
 
+        for (PlaceholderResolver resolver : resolvers)
+            markerHTML = resolver.parse(markerHTML);
 
         Location location = destination.getLocation().getBukkitLocation();
-        set.createMarker(destination.getName(), label, true, location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), icon, false);
+        set.createMarker(destination.getName(), markerHTML, true, location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), markerIcon, false);
         return true;
+    }
+
+    public static MarkerIcon getIcon(MarkerAPI markers, Destination destination) {
+        MarkerIcon markerIcon;
+        InputStream iconFile;
+
+        try {
+            iconFile = new FileInputStream(plugin.getDataFolder() + File.separator + destination.getType().getIcon());
+        } catch (FileNotFoundException e) {
+            plugin.getLogger().info(e.getMessage());
+            return null;
+        }
+
+            markerIcon = markers.getMarkerIcon(destination.getType().getName());
+            if (markerIcon == null)
+                markerIcon = markers.createMarkerIcon(destination.getType().getName(), destination.getType().getDisplayName(), iconFile);
+
+        return markerIcon;
     }
 }

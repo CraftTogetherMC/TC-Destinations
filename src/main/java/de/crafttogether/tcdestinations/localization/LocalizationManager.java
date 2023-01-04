@@ -48,7 +48,7 @@ public class LocalizationManager {
 
     public static List<PlaceholderResolver> getGlobalPlaceholders() {
         List<PlaceholderResolver> resolvers = new ArrayList<>();
-        resolvers.add(PlaceholderResolver.resolver("cmd_destination", "/" + plugin.getCommandManager().getConfig().get("commands.destinations")));
+        resolvers.add(PlaceholderResolver.resolver("cmd_destination", "/" + plugin.getCommandManager().getConfig().get("commands.destination")));
         resolvers.add(PlaceholderResolver.resolver("cmd_destinations", "/" + plugin.getCommandManager().getConfig().get("commands.destinations")));
         resolvers.add(PlaceholderResolver.resolver("cmd_destedit", "/" + plugin.getCommandManager().getConfig().get("commands.destedit")));
         resolvers.add(PlaceholderResolver.resolver("cmd_mobenter", "/" + plugin.getCommandManager().getConfig().get("commands.mobenter")));

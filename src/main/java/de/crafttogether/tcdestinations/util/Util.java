@@ -22,26 +22,24 @@ public class Util {
                 .filter(offlinePlayer -> Objects.requireNonNull(offlinePlayer.getName()).equalsIgnoreCase(name)).toList().get(0);
     }
 
-    public static void exportResource(String resourcePath) {
+    public static void exportResource(String fileName) {
         TCDestinations plugin = TCDestinations.plugin;
 
-        File inputFile = new File(resourcePath);
-        File outputFile = new File(plugin.getDataFolder() + File.separator + inputFile.getName());
-
+        File outputFile = new File(plugin.getDataFolder() + File.separator + fileName);
         if (outputFile.exists())
             return;
-
-        if (!inputFile.exists()) {
-            plugin.getLogger().warning("Could not find resource '" + resourcePath + "'");
-            return;
-        }
 
         if (!plugin.getDataFolder().exists())
             plugin.getDataFolder().mkdir();
 
+        InputStream inputStream = plugin.getResource(fileName);
+        if (inputStream == null) {
+            plugin.getLogger().warning("Could not read resource '" + fileName + "'");
+            return;
+        }
+
         try {
             outputFile.createNewFile();
-            InputStream inputStream = TCDestinations.plugin.getResource(resourcePath);
             OutputStream os = new FileOutputStream(outputFile);
             ByteStreams.copy(inputStream, os);
         } catch (IOException e) {

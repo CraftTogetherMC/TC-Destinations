@@ -104,8 +104,17 @@ public class Localization extends LocalizationEnum {
     public static final Localization COMMAND_MOBENTER_FAILED = new Localization("command.mobenter.failed", "<prefix/><red>Es wurden keine Tiere im Umkreis von <yellow>{radius}</yellow> Blöcken gefunden oder der Zug ist leider schon voll.</red>");
     public static final Localization COMMAND_MOBEJECT_SUCCESS = new Localization("command.mobeject.success", "<prefix/><green>Es wurden alle vorhandenen Tiere aus dem Zug geworden.</green>");
 
-    public static final Localization DEPENDENCY_DYNMAP_MISSING = new Localization("dependency_dynmap_missing", "<red>Dynmap ist nicht geladen");
-
+    public static final Localization DYNMAP_NOTINSTALLED = new Localization("dynmap.notinstalled", "<red>Dynmap ist nicht geladen");
+    public static final Localization DYNMAP_MARKER = new Localization("dynmap.marker", """
+            <div style="z-index:100">
+                <div style="padding:6px">
+                    <h3 style="padding:0px; margin:0px; color:{color}">{name}</h3>
+                    <span style="font-weight:bold; color:#aaaaaa;">Stations-Typ: </span>{type}<br>
+                    <span style="display: {displayOwner}"><span style="font-weight:bold; color:#aaaaaa;">Besitzer: </span>{owner}<br></span>
+                    <span style="font-style:italic; font-weight:bold; color:#ffaa00">{cmd_destination} <span style="color:#ffff55">{name}</span></span>
+                </div>
+            </div>
+            """);
     private Localization(String name, String defValue) {
         super(name, defValue);
     }

@@ -56,9 +56,9 @@ public final class TCDestinations extends JavaPlugin {
 
         // Export resources
         Util.exportResource("commands.yml");
-        if (dynmap != null) {
-            Util.exportResource("minecart.png");
+        if (getDynmap() != null) {
             Util.exportResource("rail.png");
+            Util.exportResource("minecart.png");
         }
 
         // Create default config

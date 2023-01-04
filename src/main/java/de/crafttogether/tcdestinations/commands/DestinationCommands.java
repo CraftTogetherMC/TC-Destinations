@@ -263,14 +263,17 @@ public class DestinationCommands {
             return;
         }
 
-        plugin.getDestinationStorage().addDestination(name, sender.getUniqueId(), destinationType, sender.getLocation(), true, (err, dest) -> {
+        plugin.getDestinationStorage().addDestination(name, sender.getUniqueId(), destinationType, sender.getLocation(), true, (err, destination) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
                         PlaceholderResolver.resolver("error", err.getMessage()));
-            else
+            else {
                 Localization.COMMAND_DESTEDIT_ADD_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", dest.getName()),
-                        PlaceholderResolver.resolver("id", String.valueOf(dest.getId())));
+                        PlaceholderResolver.resolver("destination", destination.getName()),
+                        PlaceholderResolver.resolver("id", String.valueOf(destination.getId())));
+
+                DynmapMarker.addMarker(destination);
+            }
         });
     }
 
@@ -528,7 +531,7 @@ public class DestinationCommands {
             final Player sender
     ) {
         if (plugin.getDynmap() == null) {
-            Localization.DEPENDENCY_DYNMAP_MISSING.message(sender);
+            Localization.DYNMAP_NOTINSTALLED.message(sender);
             return;
         }
 
