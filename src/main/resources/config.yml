@@ -26,9 +26,9 @@ DestinationTypes:
 
   - Name: public_station
     DisplayName: Öffentlich
-    DisplayNameColor: gold
+    DisplayNameColor: yellow
     ShowOwnerInformations: true
-    DynmapIcon: minecart.png
+    DynmapIcon: rail.png
 
   - Name: player_station
     DisplayName: Spielerbahnhof
