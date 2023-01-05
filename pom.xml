@@ -62,31 +62,34 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>                    <relocations>
-                    <!-- BKCommonLib relocations of Cloud command framework -->
-                    <relocation>
-                        <pattern>cloud.commandframework</pattern>
-                        <shadedPattern>com.bergerkiller.bukkit.common.dep.cloud</shadedPattern>
-                    </relocation>
-                    <relocation>
-                        <pattern>io.leangen.geantyref</pattern>
-                        <shadedPattern>com.bergerkiller.bukkit.common.dep.typetoken</shadedPattern>
-                    </relocation>
-                    <relocation>
-                        <pattern>me.lucko.commodore</pattern>
-                        <shadedPattern>com.bergerkiller.bukkit.common.dep.me.lucko.commodore</shadedPattern>
-                    </relocation>
-                </relocations>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <relocations>
+                        <!-- BKCommonLib relocations of Cloud command framework -->
+                        <relocation>
+                            <pattern>cloud.commandframework</pattern>
+                            <shadedPattern>com.bergerkiller.bukkit.common.dep.cloud</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.leangen.geantyref</pattern>
+                            <shadedPattern>com.bergerkiller.bukkit.common.dep.typetoken</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>me.lucko.commodore</pattern>
+                            <shadedPattern>com.bergerkiller.bukkit.common.dep.me.lucko.commodore</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.kyori</pattern>
+                            <shadedPattern>de.crafttogether.common.dep.net.kyori</shadedPattern>
+                        </relocation>
+                    </relocations>
                 </configuration>
             </plugin>
 
-            <!-- Copy the produced target to the static directory with just a base name -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
                 <executions>
-                    <!-- Prepare the version-less output jar -->
                     <execution>
                         <id>version-less-jar</id>
                         <phase>package</phase>
