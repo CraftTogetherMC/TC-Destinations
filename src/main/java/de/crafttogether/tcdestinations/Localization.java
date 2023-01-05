@@ -4,7 +4,7 @@ import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.localization.LocalizationEnum;
 
 public class Localization extends LocalizationEnum {
-    public static final Localization PREFIX = new Localization("prefix", "<gold>CraftBahn </gold><dark_gray>» </dark_gray>");
+    public static final Localization PREFIX = new Localization("prefix", "<gold>TCDestinations </gold><dark_gray>» </dark_gray>");
     public static final Localization HEADER = new Localization("header", "<yellow>--------------</yellow> <red><bold>CraftBahn</bold></red> <yellow>--------------<yellow/>");
     public static final Localization FOOTER = new Localization("footer", "<yellow>----------------------------------------</yellow>");
 
@@ -111,7 +111,7 @@ public class Localization extends LocalizationEnum {
                     <h3 style="padding:0px; margin:0px; color:{color}">{name}</h3>
                     <span style="font-weight:bold; color:#aaaaaa;">Stations-Typ: </span>{type}<br>
                     <span style="display: {displayOwner}"><span style="font-weight:bold; color:#aaaaaa;">Besitzer: </span>{owner}<br></span>
-                    <span style="font-style:italic; font-weight:bold; color:#ffaa00">{cmd_destination} <span style="color:#ffff55">{name}</span></span>
+                    <span style="font-style:italic; font-weight:bold; color:#00AA00">{cmd_destination} {name}</span>
                 </div>
             </div>
             """);
