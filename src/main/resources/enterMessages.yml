@@ -1,6 +1,6 @@
 enterMessages:
   train: |
-    <green>You entered a train!</green><newLine/>
-    <yellow>Please type <click:suggest_command:{cmd_destination} NAME><red>{cmd_destination}</red></click> to choose a destination</yellow>
+    <hover:show_text:'<green>Click me!'><green>You entered a train!</green><newLine/>
+    <yellow>Please type <click:suggest_command:{cmd_destination} NAME><red>{cmd_destination}</red></click> to choose a destination</yellow></hover>
 
   coaster1: <green>Enjoy the ride!</green><newLine/>
