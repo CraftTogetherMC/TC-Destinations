@@ -14,11 +14,21 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
   
 ### Features:
 - Fancy paginated list of destinations
-- Choose a destination for your train with `/destination` and get appropriate feedback.
+- You can set up multiple enter-messages with clickable texts using [MiniMessage](https://docs.adventure.kyori.net/minimessage)
 - Dynmap integration *(A marker is created on the map for each destination)*
 - Commands to get mobs on/off train(s).
 - All root-commands renameable
 - All texts can be customized *(localization.yml)*
+
+### Choose your destination with `/destination`
+![](https://i.imgur.com/vSkjgU3.png)
+
+### Clickable paginated list of all your saved destinations `/destinations`
+![](https://i.imgur.com/a6VdIq0.png)
+![](https://i.imgur.com/mUETMfv.png)
+
+### Set up multiple customized enter-messages *(enterMessages.yml)*
+![](https://i.imgur.com/8qRGMM4.png)
 
 ### Commands & Permissions:
 
