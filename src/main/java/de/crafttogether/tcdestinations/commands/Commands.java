@@ -15,11 +15,14 @@ import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
+import de.crafttogether.tcdestinations.util.Util;
 import de.crafttogether.tcdestinations.util.TCHelper;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Commands {
+    private static final TCDestinations plugin = TCDestinations.plugin;
     private static final CloudSimpleHandler cloud = new CloudSimpleHandler();
 
     private FileConfiguration config;
@@ -79,12 +83,19 @@ public class Commands {
         cloud.annotations(commands_destination);
     }
 
-    @CommandMethod("craftbahn")
+    @CommandMethod("tcdestinations")
     @CommandDescription("Zeigt die aktuelle Version des Plugin")
     public void craftbahn(
             final CommandSender sender
     ) {
         sender.sendMessage(ChatColor.GREEN + "CraftBahn-Version: " + TCDestinations.plugin.getDescription().getVersion());
+
+        Bukkit.getScheduler().runTaskAsynchronously(TCDestinations.plugin, () -> {
+            Component message = Util.checkUpdates();
+
+            if (message != null)
+                plugin.adventure().sender(sender).sendMessage(message);
+        });
     }
 
     @CommandMethod(value="${command.mobenter} [radius]", requiredSender=Player.class)

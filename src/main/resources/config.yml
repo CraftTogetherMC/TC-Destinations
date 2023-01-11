@@ -1,6 +1,12 @@
 Settings:
   ServerName: lobby
   Debug: false
+  Updates:
+    DisableNotifications: false
+    CheckForDevBuilds: true
+    Notify:
+      Console: true
+      InGame: true
 
 MySQL:
   Host: 127.0.0.1
