@@ -1,11 +1,13 @@
 package de.crafttogether;
 
+import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import de.crafttogether.mysql.MySQLAdapter;
 import de.crafttogether.mysql.MySQLConfig;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
+import de.crafttogether.tcdestinations.listener.TrainEnterListener;
 import de.crafttogether.tcdestinations.localization.LocalizationManager;
 import de.crafttogether.tcdestinations.util.Util;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -16,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapAPI;
 
+import java.io.File;
 import java.util.Objects;
 
 public final class TCDestinations extends JavaPlugin {
@@ -28,6 +31,7 @@ public final class TCDestinations extends JavaPlugin {
     private MySQLAdapter mySQLAdapter;
     private LocalizationManager localizationManager;
     private DestinationStorage destinationStorage;
+    private FileConfiguration enterMessages;
     private MiniMessage miniMessageParser;
     private BukkitAudiences adventure;
 
@@ -56,6 +60,8 @@ public final class TCDestinations extends JavaPlugin {
 
         // Export resources
         Util.exportResource("commands.yml");
+        Util.exportResource("enterMessages.yml");
+
         if (getDynmap() != null) {
             Util.exportResource("rail.png");
             Util.exportResource("minecart.png");
@@ -63,6 +69,13 @@ public final class TCDestinations extends JavaPlugin {
 
         // Create default config
         saveDefaultConfig();
+
+        enterMessages = new FileConfiguration(plugin.getDataFolder() + File.separator + "enterMessages.yml");
+        enterMessages.load();
+        Util.debug(enterMessages.toString());
+
+        // Register Events
+        getServer().getPluginManager().registerEvents(new TrainEnterListener(),this);
 
         // Setup MySQLConfig
         MySQLConfig myCfg = new MySQLConfig();
@@ -116,14 +129,26 @@ public final class TCDestinations extends JavaPlugin {
     }
 
     public String getServerName() { return serverName; }
+
     public DynmapAPI getDynmap() { return dynmap; }
+
     public Commands getCommandManager() {
         return commands;
     }
+
     public LocalizationManager getLocalizationManager() { return localizationManager; }
+
     public DestinationStorage getDestinationStorage() { return destinationStorage; }
+
+    public FileConfiguration getEnterMessages() {
+        return enterMessages;
+    }
+
     public MiniMessage getMiniMessageParser() {
         return Objects.requireNonNullElseGet(miniMessageParser, MiniMessage::miniMessage);
     }
-    public BukkitAudiences adventure() { return adventure; }
+
+    public BukkitAudiences adventure() {
+        return adventure;
+    }
 }
