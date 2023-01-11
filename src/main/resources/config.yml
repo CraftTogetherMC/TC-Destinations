@@ -11,30 +11,30 @@ MySQL:
   TablePrefix: tc_
 
 DestinationTypeAll:
-  DisplayName: Alle
+  DisplayName: All
   DisplayNameColor: yellow
 
 DestinationTypes:
   - Name: station
-    DisplayName: Bahnhof
+    DisplayName: Station
     DisplayNameColor: yellow
     ShowOwnerInformations: false
     DynmapIcon: rail.png
 
   - Name: main_station
-    DisplayName: Hauptbahnhof
+    DisplayName: Main-Station
     DisplayNameColor: yellow
     ShowOwnerInformations: false
     DynmapIcon: rail.png
 
   - Name: public_station
-    DisplayName: Öffentlich
+    DisplayName: Public
     DisplayNameColor: yellow
     ShowOwnerInformations: true
     DynmapIcon: rail.png
 
   - Name: player_station
-    DisplayName: Spielerbahnhof
+    DisplayName: Player-Station
     DisplayNameColor: gold
     ShowOwnerInformations: true
     DynmapIcon: minecart.png
