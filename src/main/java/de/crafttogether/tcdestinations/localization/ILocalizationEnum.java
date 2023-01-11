@@ -33,7 +33,7 @@ public interface ILocalizationEnum extends ILocalizationDefault {
      *
      * @param arguments for the node
      */
-    default Component deserialize(PlaceholderResolver... arguments) {
+    default Component deserialize(List<PlaceholderResolver> arguments) {
         String text = get();
 
         if (LogicUtil.nullOrEmpty(text))
@@ -41,12 +41,21 @@ public interface ILocalizationEnum extends ILocalizationDefault {
 
         List<PlaceholderResolver> resolvers = new ArrayList<>();
         resolvers.addAll(LocalizationManager.getGlobalPlaceholders());
-        resolvers.addAll(Arrays.stream(arguments).toList());
+        resolvers.addAll(arguments);
 
         for (PlaceholderResolver resolver : resolvers)
             text = resolver.resolve(text);
 
         return TCDestinations.plugin.getMiniMessageParser().deserialize(text);
+    }
+
+    /**
+     * Returns the deserialized Localization message to the sender specified
+     *
+     * @param arguments for the node
+     */
+    default Component deserialize(PlaceholderResolver... arguments) {
+        return deserialize(Arrays.stream(arguments).toList());
     }
 
     /**

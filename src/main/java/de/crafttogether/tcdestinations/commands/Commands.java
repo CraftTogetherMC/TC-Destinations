@@ -15,6 +15,7 @@ import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
+import de.crafttogether.tcdestinations.util.Updater;
 import de.crafttogether.tcdestinations.util.Util;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import net.kyori.adventure.text.Component;
@@ -27,6 +28,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,17 +90,43 @@ public class Commands {
     public void tcdestinations(
             final CommandSender sender
     ) {
-        Bukkit.getScheduler().runTaskAsynchronously(TCDestinations.plugin, () -> {
-            Component message = Util.checkUpdates();
+        Updater.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Updater.BuildType buildType) -> {
+            List<PlaceholderResolver> resolvers = new ArrayList<>();
+            Component message = null;
+
+            switch (buildType) {
+                case RELEASE, SNAPSHOT -> {
+                    resolvers.add(PlaceholderResolver.resolver("version", version));
+                    resolvers.add(PlaceholderResolver.resolver("build", build));
+                    resolvers.add(PlaceholderResolver.resolver("fileName", fileName));
+                    resolvers.add(PlaceholderResolver.resolver("fileSize", Updater.humanReadableFileSize(fileSize)));
+                    resolvers.add(PlaceholderResolver.resolver("url", url));
+                    resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
+                    resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));
+
+                    if (buildType.equals(Updater.BuildType.RELEASE))
+                        message = Localization.UPDATE_RELEASE.deserialize(resolvers);
+                    else
+                        message = Localization.UPDATE_DEVBUILD.deserialize(resolvers);
+                }
+
+                case UP2DATE -> {
+                    resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
+                    resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));
+
+                    FileConfiguration pluginDescription = Util.getPluginFile();
+                    String buildNumber = (String) pluginDescription.get("build");
+                    sender.sendMessage(ChatColor.GREEN + "TCDestinations version: " + TCDestinations.plugin.getDescription().getVersion() + " #" + buildNumber);
+
+                    message = plugin.getMiniMessageParser().deserialize("<prefix/><gold>TCPortals version: </gold><yellow>" + currentVersion + " #" + currentBuild + "</yellow><newLine/>")
+                            .append(Localization.UPDATE_LASTBUILD.deserialize(resolvers));
+                }
+            }
 
             if (message != null)
                 plugin.adventure().sender(sender).sendMessage(message);
-            else {
-                FileConfiguration pluginDescription = Util.getPluginFile();
-                String buildNumber = (String) pluginDescription.get("build");
-                sender.sendMessage(ChatColor.GREEN + "TCDestinations version: " + TCDestinations.plugin.getDescription().getVersion() + " #" + buildNumber);
-            }
-        });
+
+        }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
     }
 
     @CommandMethod(value="${command.mobenter} [radius]", requiredSender=Player.class)
