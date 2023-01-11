@@ -85,16 +85,19 @@ public class Commands {
 
     @CommandMethod("tcdestinations")
     @CommandDescription("Zeigt die aktuelle Version des Plugin")
-    public void craftbahn(
+    public void tcdestinations(
             final CommandSender sender
     ) {
-        sender.sendMessage(ChatColor.GREEN + "CraftBahn-Version: " + TCDestinations.plugin.getDescription().getVersion());
-
         Bukkit.getScheduler().runTaskAsynchronously(TCDestinations.plugin, () -> {
             Component message = Util.checkUpdates();
 
             if (message != null)
                 plugin.adventure().sender(sender).sendMessage(message);
+            else {
+                FileConfiguration pluginDescription = Util.getPluginFile();
+                String buildNumber = (String) pluginDescription.get("build");
+                sender.sendMessage(ChatColor.GREEN + "TCDestinations version: " + TCDestinations.plugin.getDescription().getVersion() + " #" + buildNumber);
+            }
         });
     }
 

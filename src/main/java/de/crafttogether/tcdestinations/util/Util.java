@@ -203,7 +203,7 @@ public class Util {
         }
     }
 
-    private static FileConfiguration getPluginFile() {
+    public static FileConfiguration getPluginFile() {
         InputStream inputStream = plugin.getResource("plugin.yml");
         FileConfiguration config = new FileConfiguration(plugin);
         config.loadFromStream(inputStream);
