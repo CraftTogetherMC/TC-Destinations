@@ -1,7 +1,11 @@
-# In this file you can configure custom enter-messages for your trains.
-# A message is displayed if a train has the corresponding tag
-# It is possible to set up multiple messages for one train as you
-# can give multiple tags to a train.
+#> In this file you can configure custom enter-messages for your trains.
+#> A message is displayed if a train has the corresponding tag
+#> It is possible to set up multiple messages for one train as you
+#> can give multiple tags to a train.
+#>
+#> For colors and text-formatting use the MiniMessage format.
+#> https://docs.adventure.kyori.net/minimessage/index.html
+#>
 enterMessages:
   train: |
     <hover:show_text:'<green>Click me!'><green>You entered a train!</green><newLine/>

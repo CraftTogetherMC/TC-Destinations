@@ -37,6 +37,7 @@ public class LocalizationManager {
         this.localizationconfig.addHeader("StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)");
         this.localizationconfig.addHeader("Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}");
         this.localizationconfig.addHeader("Content: <header/> <prefix/> <footer/>");
+        this.localizationconfig.addHeader("");
 
         // load
         this.loadLocales(Localization.class);

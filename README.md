@@ -1,6 +1,5 @@
 # TC-Destinations
-#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts)
-
+#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts) and a MySQL-Database
 
 TC-Destinations is a plugin for minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
 It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and comes along with a bunch of features to manage destinations in a more advanced way.  
@@ -13,8 +12,10 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 #### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)  
   
 ### Features:
-- Fancy paginated list of destinations
-- You can set up multiple enter-messages with clickable texts using [MiniMessage](https://docs.adventure.kyori.net/minimessage)
+- Fancy paginated list of destinations (Works cross-server in a BungeeCord network)
+- Manage your destinations in a more advanced way
+- Teleport to your destinations
+- Set up multiple enter-messages with clickable texts using [MiniMessage](https://docs.adventure.kyori.net/minimessage)
 - Dynmap integration *(A marker is created on the map for each destination)*
 - Commands to get mobs on/off train(s).
 - All root-commands renameable
@@ -68,6 +69,17 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 - [Cloud](https://github.com/Incendo/cloud) (Command Framework)
 - [Adventure](https://github.com/KyoriPowered/adventure) (UI Framework)
 
+
+### F.A.Q
+<details>
+    <summary>Can i use this plugin without Bungeecord?</summary>
+    Yes you can.
+</details>
+
+<details>
+    <summary>I don't want other servers' destinations to be listed. What can i do?</summary>
+    Just use separate databases or table-prefixes for each server
+</details>
 
 ### MySQL Table-structure:
 
