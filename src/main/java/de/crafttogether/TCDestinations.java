@@ -72,7 +72,6 @@ public final class TCDestinations extends JavaPlugin {
 
         enterMessages = new FileConfiguration(plugin.getDataFolder() + File.separator + "enterMessages.yml");
         enterMessages.load();
-        Util.debug(enterMessages.toString());
 
         // Register Events
         getServer().getPluginManager().registerEvents(new TrainEnterListener(),this);
