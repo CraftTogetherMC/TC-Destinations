@@ -126,22 +126,15 @@ public final class TCDestinations extends JavaPlugin {
         {
             Updater.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Updater.BuildType buildType) -> {
                 switch (buildType) {
-                    case RELEASE -> {
-                        plugin.getLogger().warning("A new full version of this plugin was released!");
-                        plugin.getLogger().warning("You can download it here: " + url);
-                        plugin.getLogger().warning("Version: " + version + " #" + build);
-                        plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + Updater.humanReadableFileSize(fileSize));
-                        plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
-                    }
-
-                    case SNAPSHOT -> {
-                        plugin.getLogger().warning("A new snapshot version of this plugin is available!");
-                        plugin.getLogger().warning("You can download it here: " + url);
-                        plugin.getLogger().warning("Version: " + version + " #" + build);
-                        plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + Updater.humanReadableFileSize(fileSize));
-                        plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
-                    }
+                    case RELEASE -> plugin.getLogger().warning("A new full version of this plugin was released!");
+                    case SNAPSHOT -> plugin.getLogger().warning("A new snapshot version of this plugin is available!");
                 }
+
+                plugin.getLogger().warning("You can download it here: " + url);
+                plugin.getLogger().warning("Version: " + version + " #" + build);
+                plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + Updater.humanReadableFileSize(fileSize));
+                plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
+
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
         }
 

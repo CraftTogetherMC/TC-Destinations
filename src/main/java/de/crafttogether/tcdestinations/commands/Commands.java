@@ -104,10 +104,10 @@ public class Commands {
                     resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
                     resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));
 
-                    if (buildType.equals(Updater.BuildType.RELEASE))
-                        message = Localization.UPDATE_RELEASE.deserialize(resolvers);
-                    else
-                        message = Localization.UPDATE_DEVBUILD.deserialize(resolvers);
+                    switch (buildType) {
+                        case RELEASE -> Localization.UPDATE_RELEASE.deserialize(resolvers);
+                        case SNAPSHOT -> Localization.UPDATE_DEVBUILD.deserialize(resolvers);
+                    }
                 }
 
                 case UP2DATE -> {
