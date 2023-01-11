@@ -1,7 +1,6 @@
 package de.crafttogether.tcdestinations.commands;
 
 import cloud.commandframework.annotations.*;
-import com.bergerkiller.bukkit.common.cloud.CloudSimpleHandler;
 import com.bergerkiller.bukkit.common.utils.LogicUtil;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import de.crafttogether.TCDestinations;
@@ -26,11 +25,8 @@ import java.util.UUID;
 
 public class DestinationCommands {
     private final TCDestinations plugin = TCDestinations.plugin;
-    private CloudSimpleHandler cloud = null;
 
-    public DestinationCommands(CloudSimpleHandler cloud) {
-        this.cloud = cloud;
-    }
+    public DestinationCommands() { }
 
     @CommandMethod(value="${command.destination}", requiredSender=Player.class)
     @CommandDescription("Informationen zum /fahrziel Befehl")
@@ -132,8 +128,8 @@ public class DestinationCommands {
             final @Flag(value="page") Integer page
     ) {
         List<Destination> result = new ArrayList<>(TCDestinations.plugin.getDestinationStorage().getDestinations());
-        String commandFlags = "";
-        Boolean showContentsPage = true;
+        String commandFlags;
+        boolean showContentsPage = true;
 
         // Filter: destinationType
         if (type != null && !type.isEmpty() && !type.equalsIgnoreCase(plugin.getConfig().getString("DestinationTypeAll.DisplayName"))) {
@@ -151,14 +147,15 @@ public class DestinationCommands {
 
         // Filter: player
         if (player != null && !player.isEmpty()) {
-            if (Util.getOfflinePlayer(player) == null)
+            OfflinePlayer offlinePlayer = Util.getOfflinePlayer(player);
+            if (offlinePlayer == null)
                 return;
 
             commandFlags += " --player " + player;
             showContentsPage = false;
             result = result.stream()
-                    .filter(d -> d.getOwner().equals(player))
-                    .filter(d -> d.getParticipants().equals(player))
+                    .filter(d -> d.getOwner().equals(offlinePlayer.getUniqueId()))
+                    .filter(d -> d.getParticipants().contains(offlinePlayer.getUniqueId()))
                     .toList();
         }
 
@@ -217,9 +214,9 @@ public class DestinationCommands {
                 PlaceholderResolver.resolver("participants", participants.isEmpty() ? "" : participants.substring(0, participants.length()-2)),
                 PlaceholderResolver.resolver("server", destination.getServer()),
                 PlaceholderResolver.resolver("world", destination.getWorld()),
-                PlaceholderResolver.resolver("x", String.valueOf(destination.getLocation().getX())),
-                PlaceholderResolver.resolver("y", String.valueOf(destination.getLocation().getY())),
-                PlaceholderResolver.resolver("z", String.valueOf(destination.getLocation().getZ())));
+                PlaceholderResolver.resolver("x", destination.getLocation().getX()),
+                PlaceholderResolver.resolver("y", destination.getLocation().getY()),
+                PlaceholderResolver.resolver("z", destination.getLocation().getZ()));
     }
 
     @CommandMethod(value="${command.destedit} tp <destination> [server]", requiredSender=Player.class)

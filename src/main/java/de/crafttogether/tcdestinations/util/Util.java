@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Util {
-    private static TCDestinations plugin = TCDestinations.plugin;
+    private static final TCDestinations plugin = TCDestinations.plugin;
 
     public static OfflinePlayer getOfflinePlayer(String name) {
         return Arrays.stream(Bukkit.getServer().getOfflinePlayers())

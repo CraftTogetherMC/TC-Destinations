@@ -44,7 +44,7 @@ public interface ILocalizationEnum extends ILocalizationDefault {
         resolvers.addAll(Arrays.stream(arguments).toList());
 
         for (PlaceholderResolver resolver : resolvers)
-            text = resolver.parse(text);
+            text = resolver.resolve(text);
 
         return TCDestinations.plugin.getMiniMessageParser().deserialize(text);
     }

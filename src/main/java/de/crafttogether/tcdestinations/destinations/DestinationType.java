@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class DestinationType {
-    private static List<DestinationType> types = new ArrayList<>();
+    private static final List<DestinationType> types = new ArrayList<>();
 
     private final String name;
     private final String displayName;

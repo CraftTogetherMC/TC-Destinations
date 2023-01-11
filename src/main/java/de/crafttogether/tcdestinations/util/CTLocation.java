@@ -29,19 +29,32 @@ public class CTLocation implements Serializable {
     }
 
     public static CTLocation fromBukkitLocation(Location loc) {
-        return new CTLocation(TCDestinations.plugin.getServerName(), loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+        return fromBukkitLocation(loc, TCDestinations.plugin.getServerName());
+    }
+
+    public static CTLocation fromBukkitLocation(Location loc, String serverName) {
+        if (loc.getWorld() == null)
+            return null;
+
+        return new CTLocation(serverName, loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
     }
 
     public String getServer() {
         return server;
     }
+
     public String getWorld() {
         return world;
     }
+
     public double getX() {
         return x;
     }
-    public double getY() { return y; }
+
+    public double getY() {
+        return y;
+    }
+
     public double getZ() {
         return z;
     }
@@ -49,20 +62,24 @@ public class CTLocation implements Serializable {
     public void setServer(String server) {
         this.server = server;
     }
+
     public void setWorld(String world) {
         this.world = world;
     }
+
     public void setX(double x) {
         this.x = x;
     }
+
     public void setY(double y) {
         this.y = y;
     }
+
     public void setZ(double z) {
         this.z = z;
     }
 
     public String toString() {
-        return "server=" + server + ", world=" + world + ", x=" + x + ", y=" + y + ", z=" + z;
+        return "CTLocation{server=" + server + ", world=" + world + ", x=" + x + ", y=" + y + ", z=" + z + "}";
     }
 }

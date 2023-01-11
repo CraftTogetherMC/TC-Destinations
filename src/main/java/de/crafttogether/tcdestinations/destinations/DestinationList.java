@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 
 public class DestinationList {
-    private TCDestinations plugin;
+    private final TCDestinations plugin;
 
     private final List<Destination> destinations;
     private final List<Component> pages;

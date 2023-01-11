@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class LocalizationManager {
-    private static TCDestinations plugin = TCDestinations.plugin;
+    private static final TCDestinations plugin = TCDestinations.plugin;
 
     private final FileConfiguration localizationconfig;
 

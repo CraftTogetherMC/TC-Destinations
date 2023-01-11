@@ -13,7 +13,15 @@ public class PlaceholderResolver {
         return new PlaceholderResolver(key, value);
     }
 
-    public String parse(String text) {
+    public static PlaceholderResolver resolver(String key, int value) {
+        return new PlaceholderResolver(key, String.valueOf(value));
+    }
+
+    public static PlaceholderResolver resolver(String key, double value) {
+        return new PlaceholderResolver(key, String.valueOf(value));
+    }
+
+    public String resolve(String text) {
         return text.replace("{" + this.name + "}", this.value);
     }
 

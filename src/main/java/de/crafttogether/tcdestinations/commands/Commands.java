@@ -36,7 +36,7 @@ public class Commands {
         cloud.enable(plugin);
 
         // Command handlers
-        DestinationCommands commands_destination = new DestinationCommands(cloud);
+        DestinationCommands commands_destination = new DestinationCommands();
 
         config = new FileConfiguration(plugin.getDataFolder() + File.separator + "commands.yml");
         config.load();
@@ -54,26 +54,17 @@ public class Commands {
         );
 
         // Suggestions
-        cloud.suggest("onlinePlayers", (context, input) -> {
-            List<String> result = Bukkit.getServer().getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .collect(Collectors.toList());
-            return result;
-        });
+        cloud.suggest("onlinePlayers", (context, input) -> Bukkit.getServer().getOnlinePlayers().stream()
+                .map(Player::getName)
+                .collect(Collectors.toList()));
 
-        cloud.suggest("serverName", (context, input) -> {
-            List<String> result =  plugin.getDestinationStorage().getDestinations().stream().distinct()
-                    .map(Destination::getServer)
-                    .collect(Collectors.toList());
-            return result;
-        });
+        cloud.suggest("serverName", (context, input) -> plugin.getDestinationStorage().getDestinations().stream().distinct()
+                .map(Destination::getServer)
+                .collect(Collectors.toList()));
 
-        cloud.suggest("destinationName", (context, input) -> {
-            List<String> result =  plugin.getDestinationStorage().getDestinations().stream()
-                    .map(Destination::getName)
-                    .collect(Collectors.toList());
-            return result;
-        });
+        cloud.suggest("destinationName", (context, input) -> plugin.getDestinationStorage().getDestinations().stream()
+                .map(Destination::getName)
+                .collect(Collectors.toList()));
 
         cloud.suggest("destinationType", (context, input) -> {
             List<String> result = DestinationType.getTypes().stream()
@@ -170,7 +161,7 @@ public class Commands {
         return config;
     }
 
-    public CommandManager getManager() {
+    public CommandManager<?> getManager() {
         return cloud.getManager();
     }
 }

@@ -5,7 +5,6 @@ import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.localization.LocalizationManager;
 import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -126,7 +125,7 @@ public class DynmapMarker {
         resolvers.addAll(LocalizationManager.getGlobalPlaceholders());
 
         for (PlaceholderResolver resolver : resolvers)
-            markerHTML = resolver.parse(markerHTML);
+            markerHTML = resolver.resolve(markerHTML);
 
         Location location = destination.getLocation().getBukkitLocation();
         set.createMarker(destination.getName(), markerHTML, true, location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), markerIcon, false);

@@ -1,7 +1,6 @@
 package de.crafttogether.tcdestinations.destinations;
 
 import de.crafttogether.tcdestinations.util.CTLocation;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,9 @@ public class Destination {
         this.isPublic = isPublic;
     }
 
-    public Integer getId() { return id; }
+    public Integer getId() {
+        return id;
+    }
 
     public String getName() {
         return this.name;
@@ -54,13 +55,17 @@ public class Destination {
         return this.owner;
     }
 
-    public List<UUID> getParticipants() { return participants; }
+    public List<UUID> getParticipants() {
+        return participants;
+    }
 
     public DestinationType getType() {
         return this.type;
     }
 
-    public CTLocation getLocation() { return this.location; }
+    public CTLocation getLocation() {
+        return this.location;
+    }
 
     public CTLocation getTeleportLocation() {
         return teleportLocation;
@@ -70,7 +75,9 @@ public class Destination {
         return this.isPublic;
     }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -88,11 +95,17 @@ public class Destination {
         this.owner = owner;
     }
 
-    public void setParticipants(List<UUID> participants) { this.participants = participants; }
+    public void setParticipants(List<UUID> participants) {
+        this.participants = participants;
+    }
 
-    public void addParticipant(UUID uuid) { this.participants.add(uuid); }
+    public void addParticipant(UUID uuid) {
+        this.participants.add(uuid);
+    }
 
-    public void removeParticipant(UUID uuid) { this.participants.remove(uuid); }
+    public void removeParticipant(UUID uuid) {
+        this.participants.remove(uuid);
+    }
 
     public void setType(DestinationType type) {
         this.type = type;
@@ -114,6 +127,6 @@ public class Destination {
         StringBuilder strParticipants = new StringBuilder();
         for (UUID participant : participants) strParticipants.append(participant.toString()).append(",");
         if (strParticipants.length() > 1) strParticipants = new StringBuilder(strParticipants.substring(0, strParticipants.length() - 1));
-        return "id=" + id + ", name=" + name + ", server=" + server + ", world=" + world + ", type=" + (type == null ? null : type.toString()) + ", owner=" + owner + ", participants=[" + strParticipants + "], isPrivate=" + isPublic + ", location=[" + (location == null ? null : location.toString()) + "], teleportLocation=[" + (teleportLocation == null ? null : teleportLocation.toString()) + "]";
+        return "CTDestination{id=" + id + ", name=" + name + ", server=" + server + ", world=" + world + ", type=" + (type == null ? null : type.toString()) + ", owner=" + owner + ", participants=[" + strParticipants + "], isPrivate=" + isPublic + ", location=[" + (location == null ? null : location.toString()) + "], teleportLocation=[" + (teleportLocation == null ? null : teleportLocation.toString()) + "]}";
     }
 }
