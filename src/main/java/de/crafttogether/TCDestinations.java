@@ -10,7 +10,7 @@ import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
 import de.crafttogether.tcdestinations.localization.LocalizationManager;
-import de.crafttogether.tcdestinations.util.Updater;
+import de.crafttogether.tcdestinations.util.Update;
 import de.crafttogether.tcdestinations.util.Util;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -124,7 +124,7 @@ public final class TCDestinations extends JavaPlugin {
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
         {
-            Updater.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Updater.BuildType buildType) -> {
+            Update.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Update.BuildType buildType) -> {
                 switch (buildType) {
                     case RELEASE -> plugin.getLogger().warning("A new full version of this plugin was released!");
                     case SNAPSHOT -> plugin.getLogger().warning("A new snapshot version of this plugin is available!");
@@ -132,7 +132,7 @@ public final class TCDestinations extends JavaPlugin {
 
                 plugin.getLogger().warning("You can download it here: " + url);
                 plugin.getLogger().warning("Version: " + version + " #" + build);
-                plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + Updater.humanReadableFileSize(fileSize));
+                plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + Update.humanReadableFileSize(fileSize));
                 plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
 
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));

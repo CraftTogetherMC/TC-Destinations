@@ -9,7 +9,6 @@ import de.crafttogether.TCDestinations;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,17 +30,15 @@ public interface ILocalizationEnum extends ILocalizationDefault {
     /**
      * Returns the deserialized Localization message to the sender specified
      *
-     * @param arguments for the node
+     * @param resolvers for the node
      */
-    default Component deserialize(List<PlaceholderResolver> arguments) {
+    default Component deserialize(List<PlaceholderResolver> resolvers) {
         String text = get();
 
         if (LogicUtil.nullOrEmpty(text))
             return null;
 
-        List<PlaceholderResolver> resolvers = new ArrayList<>();
         resolvers.addAll(LocalizationManager.getGlobalPlaceholders());
-        resolvers.addAll(arguments);
 
         for (PlaceholderResolver resolver : resolvers)
             text = resolver.resolve(text);
@@ -52,10 +49,10 @@ public interface ILocalizationEnum extends ILocalizationDefault {
     /**
      * Returns the deserialized Localization message to the sender specified
      *
-     * @param arguments for the node
+     * @param resolvers for the node
      */
-    default Component deserialize(PlaceholderResolver... arguments) {
-        return deserialize(Arrays.stream(arguments).toList());
+    default Component deserialize(PlaceholderResolver... resolvers) {
+        return deserialize(Arrays.stream(resolvers).toList());
     }
 
     /**

@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import de.crafttogether.TCDestinations;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
@@ -15,7 +14,7 @@ import java.net.URL;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 
-public class Updater {
+public class Update {
     private final static TCDestinations plugin = TCDestinations.plugin;
 
     public enum BuildType {

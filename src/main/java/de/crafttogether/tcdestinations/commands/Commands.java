@@ -15,7 +15,7 @@ import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
-import de.crafttogether.tcdestinations.util.Updater;
+import de.crafttogether.tcdestinations.util.Update;
 import de.crafttogether.tcdestinations.util.Util;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import net.kyori.adventure.text.Component;
@@ -23,7 +23,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -90,7 +89,7 @@ public class Commands {
     public void tcdestinations(
             final CommandSender sender
     ) {
-        Updater.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Updater.BuildType buildType) -> {
+        Update.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Update.BuildType buildType) -> {
             List<PlaceholderResolver> resolvers = new ArrayList<>();
             Component message = null;
 
@@ -99,7 +98,7 @@ public class Commands {
                     resolvers.add(PlaceholderResolver.resolver("version", version));
                     resolvers.add(PlaceholderResolver.resolver("build", build));
                     resolvers.add(PlaceholderResolver.resolver("fileName", fileName));
-                    resolvers.add(PlaceholderResolver.resolver("fileSize", Updater.humanReadableFileSize(fileSize)));
+                    resolvers.add(PlaceholderResolver.resolver("fileSize", Update.humanReadableFileSize(fileSize)));
                     resolvers.add(PlaceholderResolver.resolver("url", url));
                     resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
                     resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));

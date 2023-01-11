@@ -1,3 +1,4 @@
+# In this file you can rename the root name of commands
 commands:
   destination: destination
   destinations: destinations

@@ -2,24 +2,15 @@ package de.crafttogether.tcdestinations.util;
 
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import com.google.common.io.ByteStreams;
-import com.google.gson.*;
 import de.crafttogether.TCDestinations;
-import de.crafttogether.tcdestinations.Localization;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.units.qual.C;
 
 import java.io.*;
-import java.net.URL;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.Arrays;
 import java.util.Objects;
 

@@ -1,12 +1,12 @@
 Settings:
-  ServerName: lobby
-  Debug: false
+  ServerName: lobby # Used to identify the server in a BungeeCord network
   Updates:
     DisableNotifications: false
     CheckForDevBuilds: true
     Notify:
       Console: true
       InGame: true
+  Debug: false
 
 MySQL:
   Host: 127.0.0.1
@@ -15,6 +15,9 @@ MySQL:
   Username: username
   Password: password
   TablePrefix: tc_
+
+# Here you can customize destination-types
+# At this time it is not possible to use whitespaces in displayNames
 
 DestinationTypeAll:
   DisplayName: All
