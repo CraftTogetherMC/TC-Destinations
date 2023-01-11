@@ -1,5 +1,8 @@
 package de.crafttogether.tcdestinations.destinations;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.reflect.TypeToken;
 import de.crafttogether.Callback;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.mysql.MySQLAdapter;
@@ -8,8 +11,8 @@ import de.crafttogether.tcdestinations.util.CTLocation;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.json.JSONArray;
 
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -78,10 +81,10 @@ public class DestinationStorage {
 
         CTLocation loc = destination.getLocation();
         CTLocation tpLoc = destination.getTeleportLocation();
-        JSONArray participants = new JSONArray();
+        JsonArray participants = new JsonArray();
 
         for (UUID uuid : destination.getParticipants())
-            participants.put(uuid.toString());
+            participants.add(uuid.toString());
 
         MySQL.insertAsync("INSERT INTO `%sdestinations` " +
         "(" +
@@ -134,10 +137,10 @@ public class DestinationStorage {
 
         CTLocation loc = destination.getLocation();
         CTLocation tpLoc = destination.getTeleportLocation();
-        JSONArray participants = new JSONArray();
+        JsonArray participants = new JsonArray();
 
         for (UUID uuid : destination.getParticipants())
-            participants.put(uuid.toString());
+            participants.add(uuid.toString());
 
         MySQL.updateAsync("UPDATE `%sdestinations` SET " +
             "`name`         = '" + destination.getName() + "', " +
@@ -161,7 +164,7 @@ public class DestinationStorage {
 
             callback.call(err, affectedRows);
             MySQL.close();
-        }, MySQL.getTablePrefix(), destination.getId());
+        }, MySQL.getTablePrefix(), MySQL.getTablePrefix(), destination.getId());
     }
 
     // TODO: Trigger if other server updates a destination
@@ -297,9 +300,11 @@ public class DestinationStorage {
             List<UUID> participants = new ArrayList<>();
 
             try {
-                JSONArray jsonArray = new JSONArray(result.getString("participants"));
-                for (Object uuid : jsonArray) participants.add(UUID.fromString((String) uuid));
+                Type listType = new TypeToken<List<String>>() {}.getType();
+                List uuids = new Gson().fromJson(result.getString("participants"), listType);
+                for (Object uuid : uuids) participants.add(UUID.fromString((String) uuid));
             } catch (Exception e) {
+                e.printStackTrace();
                 TCDestinations.plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");
             }
 
