@@ -7,6 +7,7 @@ import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
+import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
 import de.crafttogether.tcdestinations.localization.LocalizationManager;
 import de.crafttogether.tcdestinations.util.Util;
@@ -74,6 +75,7 @@ public final class TCDestinations extends JavaPlugin {
         enterMessages.load();
 
         // Register Events
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(),this);
         getServer().getPluginManager().registerEvents(new TrainEnterListener(),this);
 
         // Setup MySQLConfig
@@ -116,6 +118,10 @@ public final class TCDestinations extends JavaPlugin {
                 .editTags(t -> t.resolver(TagResolver.resolver("header", Tag.selfClosingInserting(Localization.HEADER.deserialize()))))
                 .editTags(t -> t.resolver(TagResolver.resolver("footer", Tag.selfClosingInserting(Localization.FOOTER.deserialize()))))
                 .build();
+
+        if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
+                && getConfig().getBoolean("Settings.Updates.Notify.Console"))
+            Bukkit.getScheduler().runTaskAsynchronously(this, Util::checkUpdates);
 
         getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " enabled.");
     }

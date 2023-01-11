@@ -101,6 +101,7 @@ public class Localization extends LocalizationEnum {
                 </div>
             </div>""");
 
+    public static final Localization UPDATE_LASTBUILD = new Localization("update.lastBuild", "<green>Your installed version is up to date</green>");
     public static final Localization UPDATE_RELEASE = new Localization("update.devBuild", """
             <hover:show_text:'<green>Click here to download the latest version'><click:open_url:'{url}'><prefix/><green>A new full version of this plugin was released!</green>
             <prefix/><green>Version: </green><yellow>{version} #{build}</yellow>

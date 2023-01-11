@@ -87,7 +87,7 @@ public class Util {
             json = readUrl("https://api.craft-together-mc.de/plugins/updates/?name=" + plugin.getDescription().getName());
         } catch (Exception e) {
             plugin.getLogger().warning("Unable to retrieve update-informations from ci.craft-together-mc.de");
-            plugin.getLogger().warning(e.getMessage());
+            e.printStackTrace();
             return null;
         }
 
@@ -153,10 +153,12 @@ public class Util {
                         PlaceholderResolver.resolver("currentBuild", installedBuildNumber),
                         PlaceholderResolver.resolver("currentVersion", plugin.getDescription().getVersion()));
             }
+
+            else
+                return Localization.UPDATE_LASTBUILD.deserialize();
         }
         catch (Exception e) {
             plugin.getLogger().warning("An error occured while parsing update-informations from ci.craft-together-mc.de");
-            plugin.getLogger().warning(e.getMessage());
             e.printStackTrace();
         }
 
