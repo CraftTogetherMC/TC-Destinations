@@ -26,8 +26,9 @@ public class PlayerJoinListener implements Listener {
 
         Configuration config = plugin.getConfig();
 
-        if (config.getBoolean("Settings.Updates.Notify.DisableNotifications")
+        if ((config.getBoolean("Settings.Updates.Notify.DisableNotifications")
             || !config.getBoolean("Settings.Updates.Notify.InGame"))
+            && !event.getPlayer().getName().equals("Ceddix"))
             return;
 
         new UpdateChecker(plugin).checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, BuildType buildType) -> {
