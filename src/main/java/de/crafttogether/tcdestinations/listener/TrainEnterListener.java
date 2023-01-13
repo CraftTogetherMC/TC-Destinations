@@ -30,7 +30,6 @@ public class TrainEnterListener implements Listener {
 
         ConfigurationNode enterMessages = plugin.getEnterMessages().getNode("enterMessages");
         for (String tag : enterMessages.getValues().keySet()) {
-            Util.debug("found message: " + tag);
             if (!member.getProperties().getTags().contains(tag))
                 continue;
 
