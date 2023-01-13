@@ -66,11 +66,11 @@ public class Commands {
 
         // Register command placeholders
         LocalizationManager localization = plugin.getLocalizationManager();
-        localization.addPlaceholder("cmd_destination", "/" + plugin.getCommandManager().getConfig().get("commands.destination"));
-        localization.addPlaceholder("cmd_destinations", "/" + plugin.getCommandManager().getConfig().get("commands.destinations"));
-        localization.addPlaceholder("cmd_destedit", "/" + plugin.getCommandManager().getConfig().get("commands.destedit"));
-        localization.addPlaceholder("cmd_mobenter", "/" + plugin.getCommandManager().getConfig().get("commands.mobenter"));
-        localization.addPlaceholder("cmd_mobeject", "/" + plugin.getCommandManager().getConfig().get("commands.mobeject"));
+        localization.addPlaceholder("cmd_destination", "/" + config.get("commands.destination"));
+        localization.addPlaceholder("cmd_destinations", "/" + config.get("commands.destinations"));
+        localization.addPlaceholder("cmd_destedit", "/" + config.get("commands.destedit"));
+        localization.addPlaceholder("cmd_mobenter", "/" + config.get("commands.mobenter"));
+        localization.addPlaceholder("cmd_mobeject", "/" + config.get("commands.mobeject"));
 
         // Suggestions
         cloud.suggest("onlinePlayers", (context, input) -> Bukkit.getServer().getOnlinePlayers().stream()

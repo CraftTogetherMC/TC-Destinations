@@ -19,6 +19,7 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class DestinationStorage {
+    private final TCDestinations plugin = TCDestinations.plugin;
     private final TreeMap<Integer, Destination> destinations = new TreeMap<>();
 
     public DestinationStorage() {
@@ -29,7 +30,7 @@ public class DestinationStorage {
             ResultSet result = MySQL.query("SHOW TABLES LIKE '%sdestinations';", MySQL.getTablePrefix());
 
             if (!result.next()) {
-                TCDestinations.plugin.getLogger().info("[MySQL]: Create Table '" + MySQL.getTablePrefix() + "destinations' ...");
+                plugin.getLogger().info("[MySQL]: Create Table '" + MySQL.getTablePrefix() + "destinations' ...");
 
                 MySQL.execute("""
                     CREATE TABLE `%sdestinations` (
@@ -62,7 +63,7 @@ public class DestinationStorage {
             }
         }
         catch (SQLException ex) {
-            TCDestinations.plugin.getLogger().warning("[MySQL]: " + ex.getMessage());
+            plugin.getLogger().warning("[MySQL]: " + ex.getMessage());
         }
         finally {
             MySQL.close();
@@ -70,10 +71,11 @@ public class DestinationStorage {
 
         // Load all destinations from database into our cache
         Bukkit.getServer().getScheduler().runTask(TCDestinations.plugin, () -> loadAll((err, destinations) -> {
-            TCDestinations.plugin.getLogger().info("Loaded " + destinations.size() + " destinations");
+            if (err == null)
+                plugin.getLogger().info("Loaded " + destinations.size() + " destinations");
 
             // Add Dynmmap-Markers
-            DynmapMarker.setupMarkers(TCDestinations.plugin.getDestinationStorage().getDestinations());
+            DynmapMarker.setupMarkers(plugin.getDestinationStorage().getDestinations());
         }));
     }
 
@@ -122,7 +124,7 @@ public class DestinationStorage {
 
         (err, lastInsertedId) -> {
             if (err != null)
-                TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
 
             // Add to cache
             destination.setId(lastInsertedId);
@@ -161,7 +163,7 @@ public class DestinationStorage {
 
         (err, affectedRows) -> {
             if (err != null)
-                TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
 
             consumer.operation(err, affectedRows);
             MySQL.close();
@@ -174,7 +176,7 @@ public class DestinationStorage {
 
         MySQL.queryAsync("SELECT * FROM `%sdestinations` WHERE `id` = %s", (err, result) -> {
             if (err != null) {
-                TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
             }
 
             else {
@@ -190,7 +192,7 @@ public class DestinationStorage {
                     }
                 } catch (SQLException ex) {
                     err = ex;
-                    TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                    plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 }
                 finally {
                     MySQL.close();
@@ -206,7 +208,7 @@ public class DestinationStorage {
 
         MySQL.updateAsync("DELETE FROM `%sdestinations` WHERE `id` = %s", (err, affectedRows) -> {
             if (err != null) {
-                TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 consumer.operation(err, null);
             }
             else {
@@ -224,7 +226,7 @@ public class DestinationStorage {
 
         MySQL.queryAsync("SELECT * FROM `%sdestinations`", (err, result) -> {
             if (err != null) {
-                TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 consumer.operation(err, null);
             }
 
@@ -239,7 +241,7 @@ public class DestinationStorage {
                     }
                 } catch (SQLException ex) {
                     err = ex;
-                    TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + ex.getMessage());
+                    plugin.getLogger().warning("[MySQL]: Error: " + ex.getMessage());
                 }
                 finally {
                     MySQL.close();
@@ -280,7 +282,7 @@ public class DestinationStorage {
     }
 
     public void addDestination(String name, UUID owner, DestinationType type, Location loc, Boolean isPublic, Consumer<SQLException, Destination> consumer) {
-        String serverName = TCDestinations.plugin.getServerName();
+        String serverName = plugin.getServerName();
         NetworkLocation ctLoc = NetworkLocation.fromBukkitLocation(loc, serverName);
 
         Destination dest = new Destination(name, serverName, Objects.requireNonNull(loc.getWorld()).getName(), owner, new ArrayList<>(), type, ctLoc, ctLoc, isPublic);
@@ -306,14 +308,14 @@ public class DestinationStorage {
                 for (String uuid : uuids) participants.add(UUID.fromString(uuid));
             } catch (Exception e) {
                 e.printStackTrace();
-                TCDestinations.plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");
+                plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");
             }
 
             String type = result.getString("type");
             DestinationType destinationType = DestinationType.getFromName(type);
 
             if (destinationType == null) {
-                TCDestinations.plugin.getLogger().warning("DestinationType '" + type + "' was not found at config.yml");
+                plugin.getLogger().warning("DestinationType '" + type + "' was not found at config.yml");
                 return null;
             }
 
@@ -328,7 +330,7 @@ public class DestinationStorage {
             dest.setPublic(result.getBoolean("public"));
         }
         catch (Exception err) {
-            TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+            plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
             err.printStackTrace();
         }
 
