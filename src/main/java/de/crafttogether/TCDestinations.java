@@ -3,7 +3,7 @@ package de.crafttogether;
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.mysql.MySQLAdapter;
-import de.crafttogether.common.mysql.MySQLConfig;
+import de.crafttogether.common.mysql.MySQLConnection;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
 import de.crafttogether.common.util.PluginUtil;
@@ -71,6 +71,9 @@ public final class TCDestinations extends JavaPlugin {
         // Create default config
         saveDefaultConfig();
 
+        // Set serverName
+        serverName = getConfig().getString("Settings.ServerName");
+
         enterMessages = new FileConfiguration(plugin.getDataFolder() + File.separator + "enterMessages.yml");
         enterMessages.load();
 
@@ -78,44 +81,44 @@ public final class TCDestinations extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(),this);
         getServer().getPluginManager().registerEvents(new TrainEnterListener(),this);
 
-        // Setup MySQLConfig
-        MySQLConfig myCfg = new MySQLConfig();
-        myCfg.setHost(getConfig().getString("MySQL.Host"));
-        myCfg.setPort(getConfig().getInt("MySQL.Port"));
-        myCfg.setUsername(getConfig().getString("MySQL.Username"));
-        myCfg.setPassword(getConfig().getString("MySQL.Password"));
-        myCfg.setDatabase(getConfig().getString("MySQL.Database"));
-        myCfg.setTablePrefix(getConfig().getString("MySQL.TablePrefix"));
+        // Initialize LocalizationManager
+        localizationManager = new LocalizationManager(this, Localization.class,
+                getConfig().getString("Settings.Language"), "en_EN", "locales");
 
-        // Validate configuration
-        if (!myCfg.checkInputs() || myCfg.getDatabase() == null) {
-            getLogger().warning("[MySQL]: Invalid configuration! Please check your config.yml");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+        localizationManager.addHeader("");
+        localizationManager.addHeader("There are also 'global' placeholders which can be used in every message.");
+        localizationManager.addHeader("StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)");
+        localizationManager.addHeader("Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}");
+        localizationManager.addHeader("Content: <header/> <prefix/> <footer/>");
+        localizationManager.writeHeaders();
 
-        serverName = getConfig().getString("Settings.ServerName");
+        localizationManager.addTagResolver("prefix", Localization.PREFIX.deserialize());
+        localizationManager.addTagResolver("header", Localization.HEADER.deserialize());
+        localizationManager.addTagResolver("footer", Localization.FOOTER.deserialize());
 
         // Initialize MySQLAdapter
-        mySQLAdapter = new MySQLAdapter(this, myCfg);
+        mySQLAdapter = new MySQLAdapter(this,
+                getConfig().getString("MySQL.Host"),
+                getConfig().getInt("MySQL.Port"),
+                getConfig().getString("MySQL.Username"),
+                getConfig().getString("MySQL.Password"),
+                getConfig().getString("MySQL.Database"),
+                getConfig().getString("MySQL.TablePrefix"));
+
+        // Test connection
+        MySQLConnection connection = MySQLAdapter.getConnection();
+        if (MySQLAdapter.getConnection() != null)
+            connection.close();
+        else {
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return;
+        }
 
         // Register DestinationTypes from config.yml
         DestinationType.registerTypes(getConfig());
 
         // Initialize Storage
         destinationStorage = new DestinationStorage();
-
-        // Initialize LocalizationManager
-        localizationManager = new LocalizationManager(this, Localization.class, getConfig().getString("Settings.Language"), "en_EN", "locales");
-
-        localizationManager.addHeader("There are also placeholders which can be used in every message.");
-        localizationManager.addHeader("StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)");
-        localizationManager.addHeader("Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}");
-        localizationManager.addHeader("Content: <header/> <prefix/> <footer/>");
-
-        localizationManager.addTagResolver("prefix", Localization.PREFIX.deserialize());
-        localizationManager.addTagResolver("header", Localization.HEADER.deserialize());
-        localizationManager.addTagResolver("footer", Localization.FOOTER.deserialize());
 
         // Register Commands
         commands = new Commands();
