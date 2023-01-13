@@ -7,7 +7,6 @@ import de.crafttogether.TCDestinations;
 import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.util.PluginUtil;
-import de.crafttogether.tcdestinations.util.Util;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
