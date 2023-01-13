@@ -3,11 +3,11 @@ package de.crafttogether.tcdestinations.destinations;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
-import de.crafttogether.Callback;
 import de.crafttogether.TCDestinations;
-import de.crafttogether.mysql.MySQLAdapter;
-import de.crafttogether.mysql.MySQLConnection;
-import de.crafttogether.tcdestinations.util.CTLocation;
+import de.crafttogether.common.mysql.MySQLAdapter;
+import de.crafttogether.common.mysql.MySQLConnection;
+import de.crafttogether.common.mysql.MySQLConnection.Consumer;
+import de.crafttogether.common.NetworkLocation;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class DestinationStorage {
     private final TreeMap<Integer, Destination> destinations = new TreeMap<>();
 
@@ -76,11 +77,11 @@ public class DestinationStorage {
         }));
     }
 
-    private void insert(Destination destination, Callback<SQLException, Destination> callback) {
+    private void insert(Destination destination, MySQLConnection.Consumer<SQLException, Destination> consumer) {
         MySQLConnection MySQL = MySQLAdapter.getConnection();
 
-        CTLocation loc = destination.getLocation();
-        CTLocation tpLoc = destination.getTeleportLocation();
+        NetworkLocation loc = destination.getLocation();
+        NetworkLocation tpLoc = destination.getTeleportLocation();
         JsonArray participants = new JsonArray();
 
         for (UUID uuid : destination.getParticipants())
@@ -114,9 +115,9 @@ public class DestinationStorage {
             "'" + destination.getOwner().toString() + "', " +
             "'" + participants + "', " +
             (destination.isPublic() ? 1 : 0) + ", " +
-            (tpLoc != null ? loc.getX() : null) + ", " +
-            (tpLoc != null ? loc.getY() : null) + ", " +
-            (tpLoc != null ? loc.getZ() : null) +
+            (tpLoc != null ? tpLoc.getX() : null) + ", " +
+            (tpLoc != null ? tpLoc.getY() : null) + ", " +
+            (tpLoc != null ? tpLoc.getZ() : null) +
         ");",
 
         (err, lastInsertedId) -> {
@@ -127,16 +128,16 @@ public class DestinationStorage {
             destination.setId(lastInsertedId);
             destinations.put(lastInsertedId, destination);
 
-            callback.call(err, destination);
+            consumer.operation(err, destination);
             MySQL.close();
         }, MySQL.getTablePrefix());
     }
 
-    public void update(Destination destination, Callback<SQLException, Integer> callback) {
+    public void update(Destination destination, MySQLConnection.Consumer<SQLException, Integer> consumer) {
         MySQLConnection MySQL = MySQLAdapter.getConnection();
 
-        CTLocation loc = destination.getLocation();
-        CTLocation tpLoc = destination.getTeleportLocation();
+        NetworkLocation loc = destination.getLocation();
+        NetworkLocation tpLoc = destination.getTeleportLocation();
         JsonArray participants = new JsonArray();
 
         for (UUID uuid : destination.getParticipants())
@@ -162,13 +163,13 @@ public class DestinationStorage {
             if (err != null)
                 TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
 
-            callback.call(err, affectedRows);
+            consumer.operation(err, affectedRows);
             MySQL.close();
         }, MySQL.getTablePrefix(), MySQL.getTablePrefix(), destination.getId());
     }
 
     // TODO: Trigger if other server updates a destination
-    public void load(int destinationId, Callback<SQLException, Destination> callback) {
+    public void load(int destinationId, Consumer<SQLException, Destination> consumer) {
         MySQLConnection MySQL = MySQLAdapter.getConnection();
 
         MySQL.queryAsync("SELECT * FROM `%sdestinations` WHERE `id` = %s", (err, result) -> {
@@ -195,36 +196,36 @@ public class DestinationStorage {
                     MySQL.close();
                 }
 
-                callback.call(err, dest);
+                consumer.operation(err, dest);
             }
         }, MySQL.getTablePrefix(), destinationId);
     }
 
-    public void delete(int destinationId, Callback<SQLException, Integer> callback) {
+    public void delete(int destinationId, Consumer<SQLException, Integer> consumer) {
         MySQLConnection MySQL = MySQLAdapter.getConnection();
 
         MySQL.updateAsync("DELETE FROM `%sdestinations` WHERE `id` = %s", (err, affectedRows) -> {
             if (err != null) {
                 TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
-                callback.call(err, null);
+                consumer.operation(err, null);
             }
             else {
                 // Update cache
                 destinations.remove(destinationId);
 
-                callback.call(null, affectedRows);
+                consumer.operation(null, affectedRows);
                 MySQL.close();
             }
         }, MySQL.getTablePrefix(), destinationId);
     }
 
-    public void loadAll(Callback<SQLException, Collection<Destination>> callback) {
+    public void loadAll(Consumer<SQLException, Collection<Destination>> consumer) {
         MySQLConnection MySQL = MySQLAdapter.getConnection();
 
         MySQL.queryAsync("SELECT * FROM `%sdestinations`", (err, result) -> {
             if (err != null) {
                 TCDestinations.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
-                callback.call(err, null);
+                consumer.operation(err, null);
             }
 
             else {
@@ -244,7 +245,7 @@ public class DestinationStorage {
                     MySQL.close();
                 }
 
-                callback.call(err, destinations.values());
+                consumer.operation(err, destinations.values());
             }
         }, MySQL.getTablePrefix());
     }
@@ -278,12 +279,12 @@ public class DestinationStorage {
         return null;
     }
 
-    public void addDestination(String name, UUID owner, DestinationType type, Location loc, Boolean isPublic, Callback<SQLException, Destination> callback) {
+    public void addDestination(String name, UUID owner, DestinationType type, Location loc, Boolean isPublic, Consumer<SQLException, Destination> consumer) {
         String serverName = TCDestinations.plugin.getServerName();
-        CTLocation ctLoc = CTLocation.fromBukkitLocation(loc);
+        NetworkLocation ctLoc = NetworkLocation.fromBukkitLocation(loc, serverName);
 
-        Destination dest = new Destination(name, serverName, loc.getWorld().getName(), owner, new ArrayList<>(), type, ctLoc, ctLoc, isPublic);
-        insert(dest, callback);
+        Destination dest = new Destination(name, serverName, Objects.requireNonNull(loc.getWorld()).getName(), owner, new ArrayList<>(), type, ctLoc, ctLoc, isPublic);
+        insert(dest, consumer);
     }
 
     private Destination setupDestination(ResultSet result) {
@@ -295,14 +296,14 @@ public class DestinationStorage {
             String server = result.getString("server");
             String world = result.getString("world");
 
-            CTLocation loc = new CTLocation(server, world, result.getDouble("loc_x"), result.getDouble("loc_y"), result.getDouble("loc_z"));
-            CTLocation tpLoc = new CTLocation(server, world, result.getDouble("tp_x"), result.getDouble("tp_y"), result.getDouble("tp_z"));
+            NetworkLocation loc = new NetworkLocation(server, world, result.getDouble("loc_x"), result.getDouble("loc_y"), result.getDouble("loc_z"));
+            NetworkLocation tpLoc = new NetworkLocation(server, world, result.getDouble("tp_x"), result.getDouble("tp_y"), result.getDouble("tp_z"));
             List<UUID> participants = new ArrayList<>();
 
             try {
                 Type listType = new TypeToken<List<String>>() {}.getType();
-                List uuids = new Gson().fromJson(result.getString("participants"), listType);
-                for (Object uuid : uuids) participants.add(UUID.fromString((String) uuid));
+                List<String> uuids = new Gson().fromJson(result.getString("participants"), listType);
+                for (String uuid : uuids) participants.add(UUID.fromString(uuid));
             } catch (Exception e) {
                 e.printStackTrace();
                 TCDestinations.plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");

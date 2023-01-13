@@ -72,12 +72,12 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 
 ### F.A.Q
 <details>
-    <summary>Can i use this plugin without Bungeecord?</summary>
+    <summary>Can I use this plugin without Bungeecord?</summary>
     Yes you can.
 </details>
 
 <details>
-    <summary>I don't want other servers' destinations to be listed. What can i do?</summary>
+    <summary>I don't want other servers' destinations to be listed. What can I do?</summary>
     Just use separate databases or table-prefixes for each server
 </details>
 

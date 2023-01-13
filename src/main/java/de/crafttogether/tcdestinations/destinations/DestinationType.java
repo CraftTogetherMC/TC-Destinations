@@ -1,11 +1,14 @@
 package de.crafttogether.tcdestinations.destinations;
 
-import net.kyori.adventure.text.format.NamedTextColor;
+import de.crafttogether.common.dep.net.kyori.adventure.text.format.NamedTextColor;
+import de.crafttogether.common.dep.net.kyori.adventure.text.format.TextColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class DestinationType {
     private static final List<DestinationType> types = new ArrayList<>();
@@ -32,7 +35,7 @@ public class DestinationType {
         return displayName;
     }
 
-    public NamedTextColor getDisplayNameColor() {
+    public @Nullable TextColor getDisplayNameColor() {
         return displayNameColor;
     }
 
@@ -48,10 +51,11 @@ public class DestinationType {
         return types;
     }
 
+    @SuppressWarnings("unchecked")
     public static void registerTypes(FileConfiguration config) {
         List<?> typesList = config.getList("DestinationTypes");
 
-        for (Object object : typesList) {
+        for (Object object : Objects.requireNonNull(typesList)) {
             LinkedHashMap<String, Object> typeData = (LinkedHashMap<String, Object>) object;
 
             String name = (String) typeData.get("Name");

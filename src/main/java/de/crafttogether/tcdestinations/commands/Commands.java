@@ -11,18 +11,23 @@ import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.google.common.collect.ImmutableMap;
 import de.crafttogether.TCDestinations;
+import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.MiniMessage;
+import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import de.crafttogether.common.localization.LocalizationManager;
+import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.update.BuildType;
+import de.crafttogether.common.update.UpdateChecker;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
-import de.crafttogether.tcdestinations.util.Update;
-import de.crafttogether.tcdestinations.util.Util;
 import de.crafttogether.tcdestinations.util.TCHelper;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -31,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class Commands {
     private static final TCDestinations plugin = TCDestinations.plugin;
     private static final CloudSimpleHandler cloud = new CloudSimpleHandler();
@@ -57,6 +63,14 @@ public class Commands {
                 ).get(s)
             )
         );
+
+        // Register command placeholders
+        LocalizationManager localization = plugin.getLocalizationManager();
+        localization.addPlaceholder("cmd_destination", "/" + plugin.getCommandManager().getConfig().get("commands.destination"));
+        localization.addPlaceholder("cmd_destinations", "/" + plugin.getCommandManager().getConfig().get("commands.destinations"));
+        localization.addPlaceholder("cmd_destedit", "/" + plugin.getCommandManager().getConfig().get("commands.destedit"));
+        localization.addPlaceholder("cmd_mobenter", "/" + plugin.getCommandManager().getConfig().get("commands.mobenter"));
+        localization.addPlaceholder("cmd_mobeject", "/" + plugin.getCommandManager().getConfig().get("commands.mobeject"));
 
         // Suggestions
         cloud.suggest("onlinePlayers", (context, input) -> Bukkit.getServer().getOnlinePlayers().stream()
@@ -89,19 +103,19 @@ public class Commands {
     public void tcdestinations(
             final CommandSender sender
     ) {
-        Update.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Update.BuildType buildType) -> {
-            List<PlaceholderResolver> resolvers = new ArrayList<>();
+        new UpdateChecker(plugin).checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, BuildType buildType) -> {
+            List<Placeholder> resolvers = new ArrayList<>();
             Component message = null;
 
             switch (buildType) {
                 case RELEASE, SNAPSHOT -> {
-                    resolvers.add(PlaceholderResolver.resolver("version", version));
-                    resolvers.add(PlaceholderResolver.resolver("build", build));
-                    resolvers.add(PlaceholderResolver.resolver("fileName", fileName));
-                    resolvers.add(PlaceholderResolver.resolver("fileSize", Update.humanReadableFileSize(fileSize)));
-                    resolvers.add(PlaceholderResolver.resolver("url", url));
-                    resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
-                    resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));
+                    resolvers.add(Placeholder.set("version", version));
+                    resolvers.add(Placeholder.set("build", build));
+                    resolvers.add(Placeholder.set("fileName", fileName));
+                    resolvers.add(Placeholder.set("fileSize", UpdateChecker.humanReadableFileSize(fileSize)));
+                    resolvers.add(Placeholder.set("url", url));
+                    resolvers.add(Placeholder.set("currentVersion", currentVersion));
+                    resolvers.add(Placeholder.set("currentBuild", currentBuild));
 
                     switch (buildType) {
                         case RELEASE -> Localization.UPDATE_RELEASE.deserialize(resolvers);
@@ -110,20 +124,21 @@ public class Commands {
                 }
 
                 case UP2DATE -> {
-                    resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
-                    resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));
+                    resolvers.add(Placeholder.set("currentVersion", currentVersion));
+                    resolvers.add(Placeholder.set("currentBuild", currentBuild));
 
-                    FileConfiguration pluginDescription = Util.getPluginFile();
-                    String buildNumber = (String) pluginDescription.get("build");
-                    sender.sendMessage(ChatColor.GREEN + "TCDestinations version: " + TCDestinations.plugin.getDescription().getVersion() + " #" + buildNumber);
+                    Configuration pluginDescription = PluginUtil.getPluginFile(plugin);
+                    String buildNumber = pluginDescription.getString("build");
+                    sender.sendMessage(ChatColor.GREEN + "TCDestinations version: " + plugin.getDescription().getVersion() + " #" + buildNumber);
 
-                    message = plugin.getMiniMessageParser().deserialize("<prefix/><gold>TCPortals version: </gold><yellow>" + currentVersion + " #" + currentBuild + "</yellow><newLine/>")
+                    message = plugin.getLocalizationManager().miniMessage()
+                            .deserialize("<prefix/><gold>TCPortals version: </gold><yellow>" + currentVersion + " #" + currentBuild + "</yellow><newLine/>")
                             .append(Localization.UPDATE_LASTBUILD.deserialize(resolvers));
                 }
             }
 
             if (message != null)
-                plugin.adventure().sender(sender).sendMessage(message);
+                PluginUtil.adventure().sender(sender).sendMessage(message);
 
         }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
     }
@@ -163,10 +178,10 @@ public class Commands {
 
         if (entered > 0)
             Localization.COMMAND_MOBENTER_SUCCESS.message(sender,
-                    PlaceholderResolver.resolver("amount", String.valueOf(entered)));
+                    Placeholder.set("amount", String.valueOf(entered)));
         else
             Localization.COMMAND_MOBENTER_FAILED.message(sender,
-                    PlaceholderResolver.resolver("radius", String.valueOf(radius)));
+                    Placeholder.set("radius", String.valueOf(radius)));
     }
 
     @CommandMethod(value="${command.mobeject}", requiredSender=Player.class)

@@ -1,20 +1,22 @@
 package de.crafttogether.tcdestinations.destinations;
 
 import de.crafttogether.TCDestinations;
+import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.dep.net.kyori.adventure.text.event.ClickEvent;
+import de.crafttogether.common.dep.net.kyori.adventure.text.event.HoverEvent;
+import de.crafttogether.common.dep.net.kyori.adventure.text.format.NamedTextColor;
+import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.tag.Tag;
+import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.minimessage.tag.Tag;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class DestinationList {
     private final TCDestinations plugin;
 
@@ -46,20 +48,20 @@ public class DestinationList {
 
             String colorName = plugin.getConfig().getString("DestinationTypeAll.DisplayNameColor");
             Component list = Localization.COMMAND_DESTINATIONS_HEAD_DESTINATIONTYPE.deserialize(
-                            PlaceholderResolver.resolver("displayName", plugin.getConfig().getString("DestinationTypeAll.DisplayName")))
+                            Placeholder.set("displayName", plugin.getConfig().getString("DestinationTypeAll.DisplayName")))
                     .color(NamedTextColor.NAMES.value(colorName == null ? "white" : colorName))
                     .append(Component.newline());
 
             for (DestinationType type : DestinationType.getTypes()) {
                 Component btnType = Localization.COMMAND_DESTINATIONS_HEAD_DESTINATIONTYPE.deserialize(
-                                PlaceholderResolver.resolver("displayName", type.getDisplayName()))
+                                Placeholder.set("displayName", type.getDisplayName()))
                         .color(type.getDisplayNameColor())
                         .append(Component.newline());
 
                 list = list.append(btnType);
             }
 
-            this.pages.add(plugin.getMiniMessageParser().deserialize(msg,
+            this.pages.add(plugin.getLocalizationManager().miniMessage().deserialize(msg,
                     TagResolver.resolver("types", Tag.selfClosingInserting(list))));
         }
 
@@ -103,7 +105,7 @@ public class DestinationList {
             }
 
             page = page
-                    .append(Localization.COMMAND_DESTINATIONS_LIST_CAPTION.deserialize(PlaceholderResolver.resolver(
+                    .append(Localization.COMMAND_DESTINATIONS_LIST_CAPTION.deserialize(Placeholder.set(
                         "server", capitalize(serverName))))
                     .append(Component.newline());
 
@@ -118,11 +120,11 @@ public class DestinationList {
 
                 Collection<Destination> duplicates = TCDestinations.plugin.getDestinationStorage().getDestinations(dest.getName());
                 Component hoverText = Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_CAPTION.deserialize(
-                        PlaceholderResolver.resolver("command", "/" + plugin.getCommandManager().getConfig().get("commands.destination") + " " + dest.getName() + (duplicates.size() > 1 ? (" " + dest.getServer()) : "")));
+                        Placeholder.set("command", "/" + plugin.getCommandManager().getConfig().get("commands.destination") + " " + dest.getName() + (duplicates.size() > 1 ? (" " + dest.getServer()) : "")));
 
                 if (this.showType)
                     hoverText = hoverText.append(Component.newline()).append(Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_TYPE.deserialize(
-                            PlaceholderResolver.resolver("type", dest.getType().getDisplayName())));
+                            Placeholder.set("type", dest.getType().getDisplayName())));
 
                 if (dest.getOwner() != null && dest.getType().showOwnerInformations() && this.showOwner) {
                     OfflinePlayer owner = Bukkit.getOfflinePlayer(dest.getOwner());
@@ -135,14 +137,14 @@ public class DestinationList {
                     }
 
                     hoverText = hoverText.append(Component.newline()).append(Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_OWNER.deserialize(
-                            PlaceholderResolver.resolver("owner", strOwner.substring(0, strOwner.length()-2))));
+                            Placeholder.set("owner", strOwner.substring(0, strOwner.length()-2))));
                 }
 
                 if (dest.getLocation() != null && this.showLocation) {
                     hoverText = hoverText.append(Component.newline()).append(Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_LOCATION.deserialize(
-                            PlaceholderResolver.resolver("location", Math.round(dest.getLocation().getX()) + ", " + Math.round(dest.getLocation().getY()) + ", " + Math.round(dest.getLocation().getZ()))));
+                            Placeholder.set("location", Math.round(dest.getLocation().getX()) + ", " + Math.round(dest.getLocation().getY()) + ", " + Math.round(dest.getLocation().getZ()))));
                     hoverText = hoverText.append(Component.newline()).append(Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_WORLD.deserialize(
-                            PlaceholderResolver.resolver("world", dest.getWorld())));
+                            Placeholder.set("world", dest.getWorld())));
                 }
 
                 btnDestination = btnDestination
@@ -185,24 +187,24 @@ public class DestinationList {
             Component btnBackwards;
             if (pageIndex > 1) {
                 btnBackwards = Localization.COMMAND_DESTINATIONS_BTN_BACKWARDS_ON.deserialize(
-                        PlaceholderResolver.resolver("command", this.command + this.commandFlags + " --page " + (pageIndex - 1)),
-                        PlaceholderResolver.resolver("page", String.valueOf(pageIndex - 1)));
+                        Placeholder.set("command", this.command + this.commandFlags + " --page " + (pageIndex - 1)),
+                        Placeholder.set("page", String.valueOf(pageIndex - 1)));
             } else
                 btnBackwards = Localization.COMMAND_DESTINATIONS_BTN_BACKWARDS_OFF.deserialize();
 
             Component btnForwards;
             if (pageIndex < this.pages.size()) {
                 btnForwards = Localization.COMMAND_DESTINATIONS_BTN_FORWARDS_ON.deserialize(
-                        PlaceholderResolver.resolver("command", this.command + this.commandFlags + " --page " + (pageIndex + 1)),
-                        PlaceholderResolver.resolver("page", String.valueOf(pageIndex + 1)));
+                        Placeholder.set("command", this.command + this.commandFlags + " --page " + (pageIndex + 1)),
+                        Placeholder.set("page", String.valueOf(pageIndex + 1)));
             } else
                 btnForwards = Localization.COMMAND_DESTINATIONS_BTN_FORWARDS_OFF.deserialize();
 
             output = output
                     .append(btnBackwards)
                     .append(Localization.COMMAND_DESTINATIONS_LIST_INDICATOR.deserialize(
-                            PlaceholderResolver.resolver("actual", String.valueOf(pageIndex)),
-                            PlaceholderResolver.resolver("total", String.valueOf(pages.size()))
+                            Placeholder.set("actual", String.valueOf(pageIndex)),
+                            Placeholder.set("total", String.valueOf(pages.size()))
                     ))
                     .append(btnForwards)
                     .append(Component.newline());
@@ -219,7 +221,7 @@ public class DestinationList {
             Localization.COMMAND_DESTINATIONS_LIST_INVALIDPAGE.message(player);
         else if (pageIndex > getPageCount())
             Localization.COMMAND_DESTINATIONS_LIST_UNKOWNPAGE.message(player,
-                    PlaceholderResolver.resolver("pages", String.valueOf(getPageCount())));
+                    Placeholder.set("pages", String.valueOf(getPageCount())));
         else {
             Component message = renderPage(pageIndex);
 
@@ -229,7 +231,7 @@ public class DestinationList {
                         .append(Localization.FOOTER.deserialize());
             }
 
-            plugin.adventure().player(player).sendMessage(message);
+            PluginUtil.adventure().player(player).sendMessage(message);
         }
     }
 

@@ -3,17 +3,17 @@ package de.crafttogether.tcdestinations.commands;
 import cloud.commandframework.annotations.*;
 import com.bergerkiller.bukkit.common.utils.LogicUtil;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.util.PluginUtil;
+import de.crafttogether.common.NetworkLocation;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationList;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
-import de.crafttogether.tcdestinations.util.CTLocation;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
 import de.crafttogether.tcdestinations.util.TCHelper;
-import de.crafttogether.tcdestinations.util.Util;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class DestinationCommands {
     private final TCDestinations plugin = TCDestinations.plugin;
 
@@ -55,7 +56,7 @@ public class DestinationCommands {
         // No destination was found
         if (result.size() < 1 || result.get(0) == null) {
             Localization.COMMAND_DESTINATION_NOTEXIST.message(sender,
-                PlaceholderResolver.resolver("input", name)
+                Placeholder.set("input", name)
             );
         }
 
@@ -70,7 +71,7 @@ public class DestinationCommands {
             list.showLocation(true);
 
             if (!LogicUtil.nullOrEmpty(Localization.HEADER.get()))
-                plugin.adventure().sender(sender).sendMessage(Localization.HEADER.deserialize().append(Component.newline()));
+                PluginUtil.adventure().sender(sender).sendMessage(Localization.HEADER.deserialize().append(Component.newline()));
 
             if (page == null) {
                 Localization.COMMAND_DESTINATION_MULTIPLEDEST.message(sender);
@@ -112,7 +113,7 @@ public class DestinationCommands {
             }
 
             Localization.COMMAND_DESTINATION_APPLIED.message(sender,
-                PlaceholderResolver.resolver("destination", destination.getName())
+                Placeholder.set("destination", destination.getName())
             );
         }
     }
@@ -147,7 +148,7 @@ public class DestinationCommands {
 
         // Filter: player
         if (player != null && !player.isEmpty()) {
-            OfflinePlayer offlinePlayer = Util.getOfflinePlayer(player);
+            OfflinePlayer offlinePlayer = PluginUtil.getOfflinePlayer(player);
             if (offlinePlayer == null)
                 return;
 
@@ -207,16 +208,16 @@ public class DestinationCommands {
         }
 
         Localization.COMMAND_DESTEDIT_INFO.message(sender,
-                PlaceholderResolver.resolver("name", destination.getName()),
-                PlaceholderResolver.resolver("id", destination.getId().toString()),
-                PlaceholderResolver.resolver("type", destination.getType().toString()),
-                PlaceholderResolver.resolver("owner", ownerName),
-                PlaceholderResolver.resolver("participants", participants.isEmpty() ? "" : participants.substring(0, participants.length()-2)),
-                PlaceholderResolver.resolver("server", destination.getServer()),
-                PlaceholderResolver.resolver("world", destination.getWorld()),
-                PlaceholderResolver.resolver("x", destination.getLocation().getX()),
-                PlaceholderResolver.resolver("y", destination.getLocation().getY()),
-                PlaceholderResolver.resolver("z", destination.getLocation().getZ()));
+                Placeholder.set("name", destination.getName()),
+                Placeholder.set("id", destination.getId().toString()),
+                Placeholder.set("type", destination.getType().toString()),
+                Placeholder.set("owner", ownerName),
+                Placeholder.set("participants", participants.isEmpty() ? "" : participants.substring(0, participants.length()-2)),
+                Placeholder.set("server", destination.getServer()),
+                Placeholder.set("world", destination.getWorld()),
+                Placeholder.set("x", destination.getLocation().getX()),
+                Placeholder.set("y", destination.getLocation().getY()),
+                Placeholder.set("z", destination.getLocation().getZ()));
     }
 
     @CommandMethod(value="${command.destedit} tp <destination> [server]", requiredSender=Player.class)
@@ -231,7 +232,7 @@ public class DestinationCommands {
 
         if (!destination.getServer().equalsIgnoreCase(plugin.getServerName())) {
             Localization.COMMAND_DESTEDIT_TELEPORT_OTHERSERVER.message(sender,
-                    PlaceholderResolver.resolver("server", destination.getServer()));
+                    Placeholder.set("server", destination.getServer()));
             return;
         }
 
@@ -239,7 +240,7 @@ public class DestinationCommands {
         sender.teleport(destination.getTeleportLocation().getBukkitLocation());
 
         Localization.COMMAND_DESTEDIT_TELEPORT.message(sender,
-                PlaceholderResolver.resolver("destination", destination.getName()));
+                Placeholder.set("destination", destination.getName()));
     }
 
     @CommandMethod(value="${command.destedit} add <destination> <type>", requiredSender=Player.class)
@@ -263,11 +264,11 @@ public class DestinationCommands {
         plugin.getDestinationStorage().addDestination(name, sender.getUniqueId(), destinationType, sender.getLocation(), true, (err, destination) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else {
                 Localization.COMMAND_DESTEDIT_ADD_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()),
-                        PlaceholderResolver.resolver("id", String.valueOf(destination.getId())));
+                        Placeholder.set("destination", destination.getName()),
+                        Placeholder.set("id", String.valueOf(destination.getId())));
 
                 DynmapMarker.addMarker(destination);
             }
@@ -287,10 +288,10 @@ public class DestinationCommands {
         plugin.getDestinationStorage().delete(destination.getId(), (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else
                 Localization.COMMAND_DESTEDIT_REMOVE.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()));
+                        Placeholder.set("destination", destination.getName()));
         });
     }
 
@@ -303,10 +304,10 @@ public class DestinationCommands {
             final @Argument(value="player", suggestions="onlinePlayers") String player,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        OfflinePlayer participant = Bukkit.getOfflinePlayer(player);
+        OfflinePlayer participant = PluginUtil.getOfflinePlayer(player);
         if (!participant.hasPlayedBefore()) {
             Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(sender,
-                    PlaceholderResolver.resolver("input", player));
+                    Placeholder.set("input", player));
             return;
         }
 
@@ -314,7 +315,7 @@ public class DestinationCommands {
 
         if (destination.getParticipants().contains(participant.getUniqueId())) {
             Localization.COMMAND_DESTEDIT_ADDMEMBER_FAILED.message(sender,
-                    PlaceholderResolver.resolver("input", player));
+                    Placeholder.set("input", player));
             return;
         }
 
@@ -323,11 +324,11 @@ public class DestinationCommands {
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else
                 Localization.COMMAND_DESTEDIT_ADDMEMBER_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()),
-                        PlaceholderResolver.resolver("player", participant.getName()));
+                        Placeholder.set("destination", destination.getName()),
+                        Placeholder.set("player", participant.getName()));
         });
     }
 
@@ -340,10 +341,10 @@ public class DestinationCommands {
             final @Argument(value="player", suggestions="onlinePlayers") String player,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        OfflinePlayer participant = Bukkit.getOfflinePlayer(player);
+        OfflinePlayer participant = PluginUtil.getOfflinePlayer(player);
         if (!participant.hasPlayedBefore()) {
             Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(sender,
-                    PlaceholderResolver.resolver("input", player));
+                    Placeholder.set("input", player));
             return;
         }
 
@@ -351,7 +352,7 @@ public class DestinationCommands {
 
         if (!destination.getParticipants().contains(participant.getUniqueId())) {
             Localization.COMMAND_DESTEDIT_REMOVEMEMBER_FAILED.message(sender,
-                    PlaceholderResolver.resolver("input", player));
+                    Placeholder.set("input", player));
             return;
         }
 
@@ -360,11 +361,11 @@ public class DestinationCommands {
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else
                 Localization.COMMAND_DESTEDIT_REMOVEMEMBER_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()),
-                        PlaceholderResolver.resolver("player", participant.getName()));
+                        Placeholder.set("destination", destination.getName()),
+                        Placeholder.set("player", participant.getName()));
         });
     }
 
@@ -377,10 +378,10 @@ public class DestinationCommands {
             final @Argument(value="player", suggestions="onlinePlayers") String player,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        OfflinePlayer owner = Bukkit.getOfflinePlayer(player);
+        OfflinePlayer owner = PluginUtil.getOfflinePlayer(player);
         if (!owner.hasPlayedBefore()) {
             Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(sender,
-                    PlaceholderResolver.resolver("input", player));
+                    Placeholder.set("input", player));
             return;
         }
 
@@ -390,11 +391,11 @@ public class DestinationCommands {
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else
                 Localization.COMMAND_DESTEDIT_SETOWNER_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()),
-                        PlaceholderResolver.resolver("owner", owner.getName()));
+                        Placeholder.set("destination", destination.getName()),
+                        Placeholder.set("owner", owner.getName()));
         });
     }
 
@@ -412,10 +413,10 @@ public class DestinationCommands {
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else {
                 Localization.COMMAND_DESTEDIT_SETPUBLIC_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()));
+                        Placeholder.set("destination", destination.getName()));
             }
         });
     }
@@ -434,10 +435,10 @@ public class DestinationCommands {
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else {
                 Localization.COMMAND_DESTEDIT_SETPRIVATE_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()));
+                        Placeholder.set("destination", destination.getName()));
             }
         });
     }
@@ -451,15 +452,15 @@ public class DestinationCommands {
             final @Argument(value="server", suggestions="serverName") String server
     ) {
         Destination destination = findDestination(sender, name, server);
-        destination.setLocation(CTLocation.fromBukkitLocation(sender.getLocation()));
+        destination.setLocation(NetworkLocation.fromBukkitLocation(sender.getLocation(), plugin.getServerName()));
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else {
                 Localization.COMMAND_DESTEDIT_SETLOCATION_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()));
+                        Placeholder.set("destination", destination.getName()));
             }
         });
     }
@@ -490,11 +491,11 @@ public class DestinationCommands {
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else {
                 Localization.COMMAND_DESTEDIT_SETTYPE_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()),
-                        PlaceholderResolver.resolver("type", finalDestinationType.getDisplayName()));
+                        Placeholder.set("destination", destination.getName()),
+                        Placeholder.set("type", finalDestinationType.getDisplayName()));
             }
         });
     }
@@ -508,15 +509,15 @@ public class DestinationCommands {
             final @Argument(value="server", suggestions="serverName") String server
     ) {
         Destination destination = findDestination(sender, name, server);
-        destination.setTeleportLocation(CTLocation.fromBukkitLocation(sender.getLocation()));
+        destination.setTeleportLocation(NetworkLocation.fromBukkitLocation(sender.getLocation(), plugin.getServerName()));
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
                 Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
-                        PlaceholderResolver.resolver("error", err.getMessage()));
+                        Placeholder.set("error", err.getMessage()));
             else {
                 Localization.COMMAND_DESTEDIT_SETWARP_SUCCESS.message(sender,
-                        PlaceholderResolver.resolver("destination", destination.getName()));
+                        Placeholder.set("destination", destination.getName()));
             }
         });
     }
@@ -534,7 +535,7 @@ public class DestinationCommands {
 
         int markersCreated = DynmapMarker.setupMarkers(TCDestinations.plugin.getDestinationStorage().getDestinations());
         Localization.COMMAND_DESTEDIT_UPDATEMARKER_SUCCESS.message(sender,
-                PlaceholderResolver.resolver("amount", String.valueOf(markersCreated)));
+                Placeholder.set("amount", String.valueOf(markersCreated)));
     }
 
     @CommandMethod(value="${command.destedit} reload", requiredSender=Player.class)
@@ -561,7 +562,7 @@ public class DestinationCommands {
         // No destination was found
         if (result.size() < 1 || result.get(0) == null) {
             Localization.COMMAND_DESTINATION_NOTEXIST.message(sender,
-                    PlaceholderResolver.resolver("input", name)
+                    Placeholder.set("input", name)
             );
         }
 

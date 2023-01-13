@@ -1,27 +1,23 @@
 package de.crafttogether;
 
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
-import de.crafttogether.mysql.MySQLAdapter;
-import de.crafttogether.mysql.MySQLConfig;
+import de.crafttogether.common.localization.LocalizationManager;
+import de.crafttogether.common.mysql.MySQLAdapter;
+import de.crafttogether.common.mysql.MySQLConfig;
+import de.crafttogether.common.update.BuildType;
+import de.crafttogether.common.update.UpdateChecker;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
-import de.crafttogether.tcdestinations.localization.LocalizationManager;
-import de.crafttogether.tcdestinations.util.Update;
-import de.crafttogether.tcdestinations.util.Util;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.Tag;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapAPI;
 
 import java.io.File;
-import java.util.Objects;
 
 public final class TCDestinations extends JavaPlugin {
     public static TCDestinations plugin;
@@ -34,23 +30,26 @@ public final class TCDestinations extends JavaPlugin {
     private LocalizationManager localizationManager;
     private DestinationStorage destinationStorage;
     private FileConfiguration enterMessages;
-    private MiniMessage miniMessageParser;
-    private BukkitAudiences adventure;
 
     @Override
     public void onEnable() {
         plugin = this;
-        adventure = BukkitAudiences.create(this);
 
         /* Check dependencies */
+        if (!getServer().getPluginManager().isPluginEnabled("CTCommons")) {
+            plugin.getLogger().warning("Couldn't find plugin: CTCommons");
+            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            return;
+        }
+
         if (!getServer().getPluginManager().isPluginEnabled("BKCommonLib")) {
-            plugin.getLogger().warning("Couldn't find BKCommonLib");
+            plugin.getLogger().warning("Couldn't find plugin: BKCommonLib");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return;
         }
 
         if (!getServer().getPluginManager().isPluginEnabled("Train_Carts")) {
-            plugin.getLogger().warning("Couldn't find TrainCarts");
+            plugin.getLogger().warning("Couldn't find plugin: TrainCarts");
             Bukkit.getServer().getPluginManager().disablePlugin(plugin);
             return;
         }
@@ -61,12 +60,12 @@ public final class TCDestinations extends JavaPlugin {
         }
 
         // Export resources
-        Util.exportResource("commands.yml");
-        Util.exportResource("enterMessages.yml");
+        PluginUtil.exportResource(this,"commands.yml");
+        PluginUtil.exportResource(this,"enterMessages.yml");
 
         if (getDynmap() != null) {
-            Util.exportResource("rail.png");
-            Util.exportResource("minecart.png");
+            PluginUtil.exportResource(this,"rail.png");
+            PluginUtil.exportResource(this,"minecart.png");
         }
 
         // Create default config
@@ -107,24 +106,26 @@ public final class TCDestinations extends JavaPlugin {
         destinationStorage = new DestinationStorage();
 
         // Initialize LocalizationManager
-        localizationManager = new LocalizationManager();
+        localizationManager = new LocalizationManager(this, Localization.class, getConfig().getString("Settings.Language"), "en_EN", "locales");
+
+        localizationManager.addHeader("There are also placeholders which can be used in every message.");
+        localizationManager.addHeader("StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)");
+        localizationManager.addHeader("Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}");
+        localizationManager.addHeader("Content: <header/> <prefix/> <footer/>");
+
+        localizationManager.addTagResolver("prefix", Localization.PREFIX.deserialize());
+        localizationManager.addTagResolver("header", Localization.HEADER.deserialize());
+        localizationManager.addTagResolver("footer", Localization.FOOTER.deserialize());
 
         // Register Commands
         commands = new Commands();
         commands.enable(this);
 
-        // Register Tags/Placeholder for MiniMessage
-        miniMessageParser = MiniMessage.builder()
-                .editTags(t -> t.resolver(TagResolver.resolver("prefix", Tag.selfClosingInserting(Localization.PREFIX.deserialize()))))
-                .editTags(t -> t.resolver(TagResolver.resolver("header", Tag.selfClosingInserting(Localization.HEADER.deserialize()))))
-                .editTags(t -> t.resolver(TagResolver.resolver("footer", Tag.selfClosingInserting(Localization.FOOTER.deserialize()))))
-                .build();
-
         // Check for updates
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
         {
-            Update.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Update.BuildType buildType) -> {
+            new UpdateChecker(this).checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, BuildType buildType) -> {
                 switch (buildType) {
                     case RELEASE -> plugin.getLogger().warning("A new full version of this plugin was released!");
                     case SNAPSHOT -> plugin.getLogger().warning("A new snapshot version of this plugin is available!");
@@ -132,7 +133,7 @@ public final class TCDestinations extends JavaPlugin {
 
                 plugin.getLogger().warning("You can download it here: " + url);
                 plugin.getLogger().warning("Version: " + version + " #" + build);
-                plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + Update.humanReadableFileSize(fileSize));
+                plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + UpdateChecker.humanReadableFileSize(fileSize));
                 plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
 
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
@@ -162,13 +163,5 @@ public final class TCDestinations extends JavaPlugin {
 
     public FileConfiguration getEnterMessages() {
         return enterMessages;
-    }
-
-    public MiniMessage getMiniMessageParser() {
-        return Objects.requireNonNullElseGet(miniMessageParser, MiniMessage::miniMessage);
-    }
-
-    public BukkitAudiences adventure() {
-        return adventure;
     }
 }

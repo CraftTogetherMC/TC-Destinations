@@ -1,10 +1,12 @@
 package de.crafttogether.tcdestinations.listener;
 
 import de.crafttogether.TCDestinations;
+import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.update.BuildType;
+import de.crafttogether.common.update.UpdateChecker;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
-import de.crafttogether.tcdestinations.util.Update;
-import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,24 +30,24 @@ public class PlayerJoinListener implements Listener {
             || !config.getBoolean("Settings.Updates.Notify.InGame"))
             return;
 
-        Update.checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, Update.BuildType buildType) -> {
-            List<PlaceholderResolver> resolvers = new ArrayList<>();
+        new UpdateChecker(plugin).checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, BuildType buildType) -> {
+            List<Placeholder> resolvers = new ArrayList<>();
             Component message;
 
-            resolvers.add(PlaceholderResolver.resolver("version", version));
-            resolvers.add(PlaceholderResolver.resolver("build", build));
-            resolvers.add(PlaceholderResolver.resolver("fileName", fileName));
-            resolvers.add(PlaceholderResolver.resolver("fileSize", Update.humanReadableFileSize(fileSize)));
-            resolvers.add(PlaceholderResolver.resolver("url", url));
-            resolvers.add(PlaceholderResolver.resolver("currentVersion", currentVersion));
-            resolvers.add(PlaceholderResolver.resolver("currentBuild", currentBuild));
+            resolvers.add(Placeholder.set("version", version));
+            resolvers.add(Placeholder.set("build", build));
+            resolvers.add(Placeholder.set("fileName", fileName));
+            resolvers.add(Placeholder.set("fileSize", UpdateChecker.humanReadableFileSize(fileSize)));
+            resolvers.add(Placeholder.set("url", url));
+            resolvers.add(Placeholder.set("currentVersion", currentVersion));
+            resolvers.add(Placeholder.set("currentBuild", currentBuild));
 
-            if (buildType.equals(Update.BuildType.RELEASE))
+            if (buildType.equals(BuildType.RELEASE))
                 message = Localization.UPDATE_RELEASE.deserialize(resolvers);
             else
                 message = Localization.UPDATE_DEVBUILD.deserialize(resolvers);
 
-            plugin.adventure().player(event.getPlayer()).sendMessage(message);
+            PluginUtil.adventure().player(event.getPlayer()).sendMessage(message);
         }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"), 40L);
     }
 }

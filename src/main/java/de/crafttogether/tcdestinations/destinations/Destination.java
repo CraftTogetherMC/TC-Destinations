@@ -1,11 +1,12 @@
 package de.crafttogether.tcdestinations.destinations;
 
-import de.crafttogether.tcdestinations.util.CTLocation;
+import de.crafttogether.common.NetworkLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class Destination {
     private String name;
     private Integer id = null;
@@ -14,8 +15,8 @@ public class Destination {
     private UUID owner = null;
     private List<UUID> participants = new ArrayList<>();
     private DestinationType type = null;
-    private CTLocation location = null;
-    private CTLocation teleportLocation = null;
+    private NetworkLocation location = null;
+    private NetworkLocation teleportLocation = null;
     private Boolean isPublic = null;
 
     public Destination(String name, Integer id) {
@@ -23,7 +24,7 @@ public class Destination {
         this.name = name;
     }
 
-    public Destination(String name, String server, String world, UUID owner, List<UUID> participants, DestinationType type, CTLocation location, CTLocation teleportLocation, Boolean isPublic) {
+    public Destination(String name, String server, String world, UUID owner, List<UUID> participants, DestinationType type, NetworkLocation location, NetworkLocation teleportLocation, Boolean isPublic) {
         this.name = name;
         this.server = server;
         this.world = world;
@@ -63,11 +64,11 @@ public class Destination {
         return this.type;
     }
 
-    public CTLocation getLocation() {
+    public NetworkLocation getLocation() {
         return this.location;
     }
 
-    public CTLocation getTeleportLocation() {
+    public NetworkLocation getTeleportLocation() {
         return teleportLocation;
     }
 
@@ -111,11 +112,11 @@ public class Destination {
         this.type = type;
     }
 
-    public void setLocation(CTLocation location) {
+    public void setLocation(NetworkLocation location) {
         this.location = location;
     }
 
-    public void setTeleportLocation(CTLocation teleportLocation) {
+    public void setTeleportLocation(NetworkLocation teleportLocation) {
         this.teleportLocation = teleportLocation;
     }
 

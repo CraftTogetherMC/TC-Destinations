@@ -1,7 +1,8 @@
 package de.crafttogether.tcdestinations;
 
 import de.crafttogether.TCDestinations;
-import de.crafttogether.tcdestinations.localization.LocalizationEnum;
+import de.crafttogether.common.localization.LocalizationEnum;
+import de.crafttogether.common.localization.LocalizationManager;
 
 public class Localization extends LocalizationEnum {
     public static final Localization PREFIX = new Localization("prefix", "<gold>TCDestinations </gold><dark_gray>» </dark_gray>");
@@ -120,7 +121,7 @@ public class Localization extends LocalizationEnum {
     }
 
     @Override
-    public String get() {
-        return TCDestinations.plugin.getLocalizationManager().getLocale(this.getName());
+    public LocalizationManager getManager() {
+        return TCDestinations.plugin.getLocalizationManager();
     }
 }

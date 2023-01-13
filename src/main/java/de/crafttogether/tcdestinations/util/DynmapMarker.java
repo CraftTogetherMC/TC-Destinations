@@ -1,10 +1,9 @@
 package de.crafttogether.tcdestinations.util;
 
 import de.crafttogether.TCDestinations;
+import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
-import de.crafttogether.tcdestinations.localization.LocalizationManager;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -18,11 +17,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+@SuppressWarnings("unused")
 public class DynmapMarker {
     private static final TCDestinations plugin = TCDestinations.plugin;
 
@@ -112,23 +109,23 @@ public class DynmapMarker {
         owner = participants.isEmpty() ? "" : participants.substring(0, participants.length() - 2);
 
         String markerHTML = Localization.DYNMAP_MARKER.get();
-        List<PlaceholderResolver> resolvers = new ArrayList<>();
+        List<Placeholder> resolvers = new ArrayList<>();
 
-        resolvers.add(PlaceholderResolver.resolver("id", String.valueOf(destination.getId())));
-        resolvers.add(PlaceholderResolver.resolver("name", destination.getName()));
-        resolvers.add(PlaceholderResolver.resolver("type", destination.getType().getDisplayName()));
-        resolvers.add(PlaceholderResolver.resolver("owner", owner));
-        resolvers.add(PlaceholderResolver.resolver("displayOwner", destination.getType().showOwnerInformations() ? "inline" : "none"));
-        resolvers.add(PlaceholderResolver.resolver("color", destination.getType().getDisplayNameColor().asHexString()));
-        resolvers.add(PlaceholderResolver.resolver("world", destination.getWorld()));
-        resolvers.add(PlaceholderResolver.resolver("server", destination.getServer()));
-        resolvers.addAll(LocalizationManager.getGlobalPlaceholders());
+        resolvers.add(Placeholder.set("id", String.valueOf(destination.getId())));
+        resolvers.add(Placeholder.set("name", destination.getName()));
+        resolvers.add(Placeholder.set("type", destination.getType().getDisplayName()));
+        resolvers.add(Placeholder.set("owner", owner));
+        resolvers.add(Placeholder.set("displayOwner", destination.getType().showOwnerInformations() ? "inline" : "none"));
+        resolvers.add(Placeholder.set("color", Objects.requireNonNull(destination.getType().getDisplayNameColor()).asHexString()));
+        resolvers.add(Placeholder.set("world", destination.getWorld()));
+        resolvers.add(Placeholder.set("server", destination.getServer()));
+        resolvers.addAll(plugin.getLocalizationManager().getPlaceholders());
 
-        for (PlaceholderResolver resolver : resolvers)
+        for (Placeholder resolver : resolvers)
             markerHTML = resolver.resolve(markerHTML);
 
         Location location = destination.getLocation().getBukkitLocation();
-        set.createMarker(destination.getName(), markerHTML, true, location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), markerIcon, false);
+        set.createMarker(destination.getName(), markerHTML, true, Objects.requireNonNull(location.getWorld()).getName(), location.getX(), location.getY(), location.getZ(), markerIcon, false);
         return true;
     }
 

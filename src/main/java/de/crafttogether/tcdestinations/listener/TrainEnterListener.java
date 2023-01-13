@@ -4,10 +4,10 @@ import com.bergerkiller.bukkit.common.config.ConfigurationNode;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import de.crafttogether.TCDestinations;
-import de.crafttogether.tcdestinations.localization.LocalizationManager;
-import de.crafttogether.tcdestinations.localization.PlaceholderResolver;
+import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.util.Util;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,16 +34,15 @@ public class TrainEnterListener implements Listener {
             if (!member.getProperties().getTags().contains(tag))
                 continue;
 
-            List<PlaceholderResolver> resolvers = new ArrayList<>();
-            resolvers.add(PlaceholderResolver.resolver("train", member.getGroup().getProperties().getTrainName()));
-            resolvers.addAll(LocalizationManager.getGlobalPlaceholders());
+            List<Placeholder> resolvers = new ArrayList<>();
+            resolvers.add(Placeholder.set("train", member.getGroup().getProperties().getTrainName()));
 
             String message = (String) enterMessages.get(tag);
-            for (PlaceholderResolver resolver : resolvers)
+            for (Placeholder resolver : resolvers)
                 message = resolver.resolve(message);
 
-            Component messageComponent = TCDestinations.plugin.getMiniMessageParser().deserialize(message);
-            plugin.adventure().player(player).sendMessage(messageComponent);
+            Component messageComponent = plugin.getLocalizationManager().miniMessage().deserialize(message);
+            PluginUtil.adventure().player(player).sendMessage(messageComponent);
         }
     }
 }

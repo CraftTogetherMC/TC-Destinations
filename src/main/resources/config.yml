@@ -1,5 +1,6 @@
 Settings:
   ServerName: lobby # Used to identify the server in a BungeeCord network
+  Language: en_EN
   Updates:
     DisableNotifications: false
     CheckForDevBuilds: true
