@@ -72,9 +72,9 @@ For example, if you want to drive from server1 to a destination on server2,
 you need to create a [destination](https://wiki.traincarts.net/p/TrainCarts/Signs/Destination) on server1 that leads to the portal, which leads to server2.  
 Let's name it server2 as well.  
   
-If you now run `/destination` to set a destination, for your train and the destination is
-on another server, TC-Destinations will create a [route](https://wiki.traincarts.net/p/TrainCarts/PathFinding#Route_Manager) for the train.
-The route then firstly contains server2 and afterwards the destination you want to reach.  
+If you now run `/destination` to set a destination, for your train and the destination is  
+on another server, TC-Destinations will create a [route](https://wiki.traincarts.net/p/TrainCarts/PathFinding#Route_Manager) for the train.  
+The route then firstly contains 'server2' and afterwards the destination you want to reach.   
   
 Thats it!  
 
