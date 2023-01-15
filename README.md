@@ -1,5 +1,5 @@
 # TC-Destinations
-#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts) and a MySQL-Database
+#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts), [CTCommons](https://github.com/CraftTogetherMC/CTCommons) and a MySQL-Database
 
 TC-Destinations is a plugin for minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
 It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and comes along with a bunch of features to manage destinations in a more advanced way.  
@@ -19,7 +19,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 - Dynmap integration *(A marker is created on the map for each destination)*
 - Commands to get mobs on/off train(s).
 - All root-commands renameable
-- All texts can be customized *(localization.yml)*
+- All texts can be customized
 
 ### Choose your destination with `/destination`
 ![](https://i.imgur.com/vSkjgU3.png)
@@ -64,11 +64,6 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 | `/mobenter [radius]`  | craftbahn.command.mobenter | Allows animals around the selected train to board the train |
 | `/mobeject`           | craftbahn.command.mobeject | Ejects all animals from the selected train                  |
 
-### Libraries used
-- [BKCommonLib](https://github.com/bergerhealer) (Extensive plugin library)
-- [Cloud](https://github.com/Incendo/cloud) (Command Framework)
-- [Adventure](https://github.com/KyoriPowered/adventure) (UI Framework)
-
 
 ### F.A.Q
 <details>
@@ -80,7 +75,13 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
     <summary>I don't want other servers' destinations to be listed. What can I do?</summary>
     Just use separate databases or table-prefixes for each server
 </details>
-
+  
+### Libraries used
+- [CTCommons](https://github.com/CraftTogetherMC/CTCommons) (CraftTogether's plugin library)
+- [BKCommonLib](https://github.com/bergerhealer) (Extensive plugin library)
+- [Cloud](https://github.com/Incendo/cloud) (Command Framework)
+- [Adventure](https://github.com/KyoriPowered/adventure) (UI Framework)
+  
 ### MySQL Table-structure:
 
 ``` sql
