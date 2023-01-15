@@ -21,14 +21,14 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 - All root-commands renameable
 - All texts can be customized
 
-### Choose your destination with `/destination`
+#### Choose your destination with `/destination`
 ![](https://i.imgur.com/vSkjgU3.png)
 
-### Clickable paginated list of all your saved destinations `/destinations`
+#### Clickable paginated list of all your saved destinations `/destinations`
 ![](https://i.imgur.com/a6VdIq0.png)
 ![](https://i.imgur.com/mUETMfv.png)
 
-### Set up multiple customized enter-messages *(enterMessages.yml)*
+#### Set up multiple customized enter-messages *(enterMessages.yml)*
 ![](https://i.imgur.com/8qRGMM4.png)
 
 ## Commands & Permissions:
