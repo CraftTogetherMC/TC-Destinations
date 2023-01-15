@@ -35,7 +35,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 ## Commands & Permissions:
 
 #### Select a Destination
-| Command                         | Permissions                           | Description                                                                       |
+| Command                         | Permission                            | Description                                                                       |
 |:--------------------------------|:--------------------------------------|:----------------------------------------------------------------------------------|
 | `/destination`                  | craftbahn.command.destination         | Shows basic information about using the command                                   |
 | `/destination <name>`           | craftbahn.command.destination         | Sets the specified destination to the currently selected train                    |
@@ -60,7 +60,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 | `/destedit updatemarker <destination> <player> [server]` | craftbahn.command.destedit.updatemarker | Renews all markers to be displayed on the dynmap                                                                           |
 
 #### Additional commands
-| Befehl                | Permission                 | Beschreibung                                                |
+| Command               | Permission                 | Description                                                 |
 |:----------------------|:---------------------------|:------------------------------------------------------------|
 | `/mobenter [radius]`  | craftbahn.command.mobenter | Allows animals around the selected train to board the train |
 | `/mobeject`           | craftbahn.command.mobeject | Ejects all animals from the selected train                  |
