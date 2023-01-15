@@ -33,7 +33,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 
 ## Commands & Permissions:
 
-#### Select Destination
+#### Select a Destination
 | Command                         | Permissions                           | Description                                                                       |
 |:--------------------------------|:--------------------------------------|:----------------------------------------------------------------------------------|
 | `/destination`                  | craftbahn.command.destination         | Shows basic information about using the command                                   |
@@ -41,7 +41,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 | `/destinations [type]`          | craftbahn.command.destinations        | Shows a list of all destinations                                                  |
 | `/destinations [type] [filter]` | craftbahn.command.destinations.filter | Shows a filtered list of all destinations **Filter flags:** `--server` `--player` |  
 
-#### Manage destinations
+#### Manage your destinations
 | Command                                                  | Permissions                             | Description                                                                                                                |
 |:---------------------------------------------------------|:----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
 | `/destedit info <destination> [server]`                  | craftbahn.command.destedit.info         | Displays detailed information about the specified destination                                                              |
