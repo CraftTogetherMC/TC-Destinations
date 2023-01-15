@@ -12,11 +12,8 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.google.common.collect.ImmutableMap;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
-import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.MiniMessage;
-import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.localization.Placeholder;
-import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
 import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
@@ -24,10 +21,8 @@ import de.crafttogether.tcdestinations.destinations.Destination;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -103,43 +98,43 @@ public class Commands {
     public void tcdestinations(
             final CommandSender sender
     ) {
-        new UpdateChecker(plugin).checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, BuildType buildType) -> {
+        new UpdateChecker(plugin).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
+            if (err != null)
+                err.printStackTrace();
+
             List<Placeholder> resolvers = new ArrayList<>();
-            Component message = null;
+            Component message;
 
-            switch (buildType) {
-                case RELEASE, SNAPSHOT -> {
-                    resolvers.add(Placeholder.set("version", version));
-                    resolvers.add(Placeholder.set("build", build));
-                    resolvers.add(Placeholder.set("fileName", fileName));
-                    resolvers.add(Placeholder.set("fileSize", UpdateChecker.humanReadableFileSize(fileSize)));
-                    resolvers.add(Placeholder.set("url", url));
-                    resolvers.add(Placeholder.set("currentVersion", currentVersion));
-                    resolvers.add(Placeholder.set("currentBuild", currentBuild));
+            if (build == null) {
+                resolvers.add(Placeholder.set("currentVersion", currentVersion));
+                resolvers.add(Placeholder.set("currentBuild", currentBuild));
 
-                    switch (buildType) {
-                        case RELEASE -> Localization.UPDATE_RELEASE.deserialize(resolvers);
-                        case SNAPSHOT -> Localization.UPDATE_DEVBUILD.deserialize(resolvers);
-                    }
-                }
+                message = plugin.getLocalizationManager().miniMessage()
+                        .deserialize("<prefix/><gold>" + plugin.getName() + " version: </gold><yellow>" + currentVersion + " #" + currentBuild + "</yellow><newLine/>");
 
-                case UP2DATE -> {
-                    resolvers.add(Placeholder.set("currentVersion", currentVersion));
-                    resolvers.add(Placeholder.set("currentBuild", currentBuild));
-
-                    Configuration pluginDescription = PluginUtil.getPluginFile(plugin);
-                    String buildNumber = pluginDescription.getString("build");
-                    sender.sendMessage(ChatColor.GREEN + "TCDestinations version: " + plugin.getDescription().getVersion() + " #" + buildNumber);
-
-                    message = plugin.getLocalizationManager().miniMessage()
-                            .deserialize("<prefix/><gold>TCPortals version: </gold><yellow>" + currentVersion + " #" + currentBuild + "</yellow><newLine/>")
-                            .append(Localization.UPDATE_LASTBUILD.deserialize(resolvers));
-                }
+                if (err == null)
+                    message = message.append(Localization.UPDATE_LASTBUILD.deserialize(resolvers));
+                else
+                    message = message.append(Localization.UPDATE_ERROR.deserialize(
+                            Placeholder.set("error", err.getMessage())));
             }
 
-            if (message != null)
-                PluginUtil.adventure().sender(sender).sendMessage(message);
+            else {
+                resolvers.add(Placeholder.set("version", build.getVersion()));
+                resolvers.add(Placeholder.set("build", build.getNumber()));
+                resolvers.add(Placeholder.set("fileName", build.getFileName()));
+                resolvers.add(Placeholder.set("fileSize", build.getHumanReadableFileSize()));
+                resolvers.add(Placeholder.set("url", build.getUrl()));
+                resolvers.add(Placeholder.set("currentVersion", currentVersion));
+                resolvers.add(Placeholder.set("currentBuild", currentBuild));
 
+                message = switch (build.getType()) {
+                    case RELEASE -> Localization.UPDATE_RELEASE.deserialize(resolvers);
+                    case SNAPSHOT -> Localization.UPDATE_DEVBUILD.deserialize(resolvers);
+                };
+            }
+
+            PluginUtil.adventure().sender(sender).sendMessage(message);
         }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
     }
 

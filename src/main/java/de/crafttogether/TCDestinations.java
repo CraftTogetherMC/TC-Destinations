@@ -1,19 +1,17 @@
 package de.crafttogether;
 
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
+import de.crafttogether.common.dep.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.localization.LocalizationManager;
-import de.crafttogether.common.mysql.MySQLAdapter;
-import de.crafttogether.common.mysql.MySQLConnection;
-import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
 import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
-import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapAPI;
 
@@ -26,7 +24,6 @@ public final class TCDestinations extends JavaPlugin {
     private DynmapAPI dynmap;
 
     private Commands commands;
-    private MySQLAdapter mySQLAdapter;
     private LocalizationManager localizationManager;
     private DestinationStorage destinationStorage;
     private FileConfiguration enterMessages;
@@ -35,28 +32,30 @@ public final class TCDestinations extends JavaPlugin {
     public void onEnable() {
         plugin = this;
 
+        PluginManager pluginManager = Bukkit.getPluginManager();
+
         /* Check dependencies */
-        if (!getServer().getPluginManager().isPluginEnabled("CTCommons")) {
+        if (!pluginManager.isPluginEnabled("CTCommons")) {
             plugin.getLogger().warning("Couldn't find plugin: CTCommons");
-            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            pluginManager.disablePlugin(plugin);
             return;
         }
 
-        if (!getServer().getPluginManager().isPluginEnabled("BKCommonLib")) {
+        if (!pluginManager.isPluginEnabled("BKCommonLib")) {
             plugin.getLogger().warning("Couldn't find plugin: BKCommonLib");
-            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            pluginManager.disablePlugin(plugin);
             return;
         }
 
-        if (!getServer().getPluginManager().isPluginEnabled("Train_Carts")) {
+        if (!pluginManager.isPluginEnabled("Train_Carts")) {
             plugin.getLogger().warning("Couldn't find plugin: TrainCarts");
-            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
+            pluginManager.disablePlugin(plugin);
             return;
         }
 
-        if (getServer().getPluginManager().isPluginEnabled("dynmap")) {
+        if (pluginManager.isPluginEnabled("dynmap")) {
             plugin.getLogger().warning("Dynmap found!");
-            dynmap = (DynmapAPI) Bukkit.getServer().getPluginManager().getPlugin("dynmap");
+            dynmap = (DynmapAPI) pluginManager.getPlugin("dynmap");
         }
 
         // Export resources
@@ -78,8 +77,8 @@ public final class TCDestinations extends JavaPlugin {
         enterMessages.load();
 
         // Register Events
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(),this);
-        getServer().getPluginManager().registerEvents(new TrainEnterListener(),this);
+        pluginManager.registerEvents(new PlayerJoinListener(),this);
+        pluginManager.registerEvents(new TrainEnterListener(),this);
 
         // Initialize LocalizationManager
         localizationManager = new LocalizationManager(this, Localization.class,
@@ -96,29 +95,12 @@ public final class TCDestinations extends JavaPlugin {
         localizationManager.addTagResolver("header", Localization.HEADER.deserialize());
         localizationManager.addTagResolver("footer", Localization.FOOTER.deserialize());
 
-        // Initialize MySQLAdapter
-        mySQLAdapter = new MySQLAdapter(this,
-                getConfig().getString("MySQL.Host"),
-                getConfig().getInt("MySQL.Port"),
-                getConfig().getString("MySQL.Username"),
-                getConfig().getString("MySQL.Password"),
-                getConfig().getString("MySQL.Database"),
-                getConfig().getString("MySQL.TablePrefix"));
-
-        // Test connection
-        MySQLConnection connection = MySQLAdapter.getConnection();
-        if (MySQLAdapter.getConnection() != null)
-            connection.close();
-        else {
-            Bukkit.getServer().getPluginManager().disablePlugin(plugin);
-            return;
-        }
-
-        // Register DestinationTypes from config.yml
-        DestinationType.registerTypes(getConfig());
-
         // Initialize Storage
         destinationStorage = new DestinationStorage();
+        if (!destinationStorage.isActive()) {
+            pluginManager.disablePlugin(plugin);
+            return;
+        }
 
         // Register Commands
         commands = new Commands();
@@ -128,19 +110,30 @@ public final class TCDestinations extends JavaPlugin {
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
         {
-            new UpdateChecker(this).checkUpdatesAsync((String version, String build, String fileName, Integer fileSize, String url, String currentVersion, String currentBuild, BuildType buildType) -> {
-                switch (buildType) {
-                    case RELEASE -> plugin.getLogger().warning("A new full version of this plugin was released!");
-                    case SNAPSHOT -> plugin.getLogger().warning("A new snapshot version of this plugin is available!");
-                }
+            new UpdateChecker(this).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
+                if (err != null)
+                    err.printStackTrace();
 
-                plugin.getLogger().warning("You can download it here: " + url);
-                plugin.getLogger().warning("Version: " + version + " #" + build);
-                plugin.getLogger().warning("FileName: " + fileName + " FileSize: " + UpdateChecker.humanReadableFileSize(fileSize));
-                plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
+                if (build == null)
+                    return;
 
+                // Go sync again to avoid mixing output with other plugins
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    switch (build.getType()) {
+                        case RELEASE -> plugin.getLogger().warning("A new full version of this plugin was released!");
+                        case SNAPSHOT -> plugin.getLogger().warning("A new snapshot version of this plugin is available!");
+                    }
+
+                    plugin.getLogger().warning("You can download it here: " + build.getUrl());
+                    plugin.getLogger().warning("Version: " + build.getVersion() + " #" + build.getNumber());
+                    plugin.getLogger().warning("FileName: " + build.getFileName() + " FileSize: " + build.getHumanReadableFileSize());
+                    plugin.getLogger().warning("You are on version: " + currentVersion + " #" + currentBuild);
+                });
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
         }
+
+        // bStats
+        new Metrics(this, 17416);
 
         getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " enabled.");
     }
@@ -148,8 +141,8 @@ public final class TCDestinations extends JavaPlugin {
     @Override
     public void onDisable() {
         // Shutdown MySQL-Adapter
-        if(mySQLAdapter != null)
-            mySQLAdapter.disconnect();
+        if(destinationStorage != null)
+            destinationStorage.close();
     }
 
     public String getServerName() { return serverName; }

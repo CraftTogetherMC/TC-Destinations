@@ -19,20 +19,34 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class DestinationStorage {
+    private final MySQLAdapter mySQLAdapter;
     private final TCDestinations plugin = TCDestinations.plugin;
     private final TreeMap<Integer, Destination> destinations = new TreeMap<>();
 
     public DestinationStorage() {
-        MySQLConnection MySQL = MySQLAdapter.getConnection();
+        // Initialize MySQLAdapter
+        mySQLAdapter = new MySQLAdapter(plugin,
+                plugin.getConfig().getString("MySQL.Host"),
+                plugin.getConfig().getInt("MySQL.Port"),
+                plugin.getConfig().getString("MySQL.Username"),
+                plugin.getConfig().getString("MySQL.Password"),
+                plugin.getConfig().getString("MySQL.Database"),
+                plugin.getConfig().getString("MySQL.TablePrefix"));
+
+        // Register DestinationTypes from config.yml
+        DestinationType.registerTypes(plugin.getConfig());
 
         // Create Tables if missing
-        try {
-            ResultSet result = MySQL.query("SHOW TABLES LIKE '%sdestinations';", MySQL.getTablePrefix());
+        MySQLConnection connection = mySQLAdapter.getConnection();
+        if (connection == null)
+            return;
 
-            if (!result.next()) {
-                plugin.getLogger().info("[MySQL]: Create Table '" + MySQL.getTablePrefix() + "destinations' ...");
+        try (ResultSet result = connection.query("SHOW TABLES LIKE '%sdestinations';", connection.getTablePrefix())) {
 
-                MySQL.execute("""
+            if (result != null && !result.next()) {
+                plugin.getLogger().info("[MySQL]: Create Table '" + connection.getTablePrefix() + "destinations' ...");
+
+                connection.execute("""
                     CREATE TABLE `%sdestinations` (
                       `id` int(11) NOT NULL,
                       `name` varchar(24) NOT NULL,
@@ -49,24 +63,24 @@ public class DestinationStorage {
                       `tp_y` double DEFAULT NULL,
                       `tp_z` double DEFAULT NULL
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                """, MySQL.getTablePrefix());
+                """, connection.getTablePrefix());
 
-                MySQL.execute("""
+                connection.execute("""
                     ALTER TABLE `%sdestinations`
                       ADD PRIMARY KEY (`id`);
-                """, MySQL.getTablePrefix());
+                """, connection.getTablePrefix());
 
-                MySQL.execute("""
+                connection.execute("""
                     ALTER TABLE `%sdestinations`
                       MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-                """, MySQL.getTablePrefix());
+                """, connection.getTablePrefix());
             }
         }
         catch (SQLException ex) {
             plugin.getLogger().warning("[MySQL]: " + ex.getMessage());
         }
         finally {
-            MySQL.close();
+            connection.close();
         }
 
         // Load all destinations from database into our cache
@@ -80,7 +94,7 @@ public class DestinationStorage {
     }
 
     private void insert(Destination destination, MySQLConnection.Consumer<SQLException, Destination> consumer) {
-        MySQLConnection MySQL = MySQLAdapter.getConnection();
+        MySQLConnection connection = mySQLAdapter.getConnection();
 
         NetworkLocation loc = destination.getLocation();
         NetworkLocation tpLoc = destination.getTeleportLocation();
@@ -89,7 +103,7 @@ public class DestinationStorage {
         for (UUID uuid : destination.getParticipants())
             participants.add(uuid.toString());
 
-        MySQL.insertAsync("INSERT INTO `%sdestinations` " +
+        connection.insertAsync("INSERT INTO `%sdestinations` " +
         "(" +
             "`name`, " +
             "`type`, " +
@@ -131,12 +145,12 @@ public class DestinationStorage {
             destinations.put(lastInsertedId, destination);
 
             consumer.operation(err, destination);
-            MySQL.close();
-        }, MySQL.getTablePrefix());
+            connection.close();
+        }, connection.getTablePrefix());
     }
 
     public void update(Destination destination, MySQLConnection.Consumer<SQLException, Integer> consumer) {
-        MySQLConnection MySQL = MySQLAdapter.getConnection();
+        MySQLConnection connection = mySQLAdapter.getConnection();
 
         NetworkLocation loc = destination.getLocation();
         NetworkLocation tpLoc = destination.getTeleportLocation();
@@ -145,7 +159,7 @@ public class DestinationStorage {
         for (UUID uuid : destination.getParticipants())
             participants.add(uuid.toString());
 
-        MySQL.updateAsync("UPDATE `%sdestinations` SET " +
+        connection.updateAsync("UPDATE `%sdestinations` SET " +
             "`name`         = '" + destination.getName() + "', " +
             "`type`         = '" + destination.getType().getName() + "', " +
             "`server`       = '" + destination.getServer() + "', " +
@@ -166,15 +180,15 @@ public class DestinationStorage {
                 plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
 
             consumer.operation(err, affectedRows);
-            MySQL.close();
-        }, MySQL.getTablePrefix(), MySQL.getTablePrefix(), destination.getId());
+            connection.close();
+        }, connection.getTablePrefix(), connection.getTablePrefix(), destination.getId());
     }
 
     // TODO: Trigger if other server updates a destination
     public void load(int destinationId, Consumer<SQLException, Destination> consumer) {
-        MySQLConnection MySQL = MySQLAdapter.getConnection();
+        MySQLConnection connection = mySQLAdapter.getConnection();
 
-        MySQL.queryAsync("SELECT * FROM `%sdestinations` WHERE `id` = %s", (err, result) -> {
+        connection.queryAsync("SELECT * FROM `%sdestinations` WHERE `id` = %s", (err, result) -> {
             if (err != null) {
                 plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
             }
@@ -195,18 +209,18 @@ public class DestinationStorage {
                     plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 }
                 finally {
-                    MySQL.close();
+                    connection.close();
                 }
 
                 consumer.operation(err, dest);
             }
-        }, MySQL.getTablePrefix(), destinationId);
+        }, connection.getTablePrefix(), destinationId);
     }
 
     public void delete(int destinationId, Consumer<SQLException, Integer> consumer) {
-        MySQLConnection MySQL = MySQLAdapter.getConnection();
+        MySQLConnection connection = mySQLAdapter.getConnection();
 
-        MySQL.updateAsync("DELETE FROM `%sdestinations` WHERE `id` = %s", (err, affectedRows) -> {
+        connection.updateAsync("DELETE FROM `%sdestinations` WHERE `id` = %s", (err, affectedRows) -> {
             if (err != null) {
                 plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 consumer.operation(err, null);
@@ -216,15 +230,15 @@ public class DestinationStorage {
                 destinations.remove(destinationId);
 
                 consumer.operation(null, affectedRows);
-                MySQL.close();
+                connection.close();
             }
-        }, MySQL.getTablePrefix(), destinationId);
+        }, connection.getTablePrefix(), destinationId);
     }
 
     public void loadAll(Consumer<SQLException, Collection<Destination>> consumer) {
-        MySQLConnection MySQL = MySQLAdapter.getConnection();
+        MySQLConnection connection = mySQLAdapter.getConnection();
 
-        MySQL.queryAsync("SELECT * FROM `%sdestinations`", (err, result) -> {
+        connection.queryAsync("SELECT * FROM `%sdestinations`", (err, result) -> {
             if (err != null) {
                 plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 consumer.operation(err, null);
@@ -244,12 +258,12 @@ public class DestinationStorage {
                     plugin.getLogger().warning("[MySQL]: Error: " + ex.getMessage());
                 }
                 finally {
-                    MySQL.close();
+                    connection.close();
                 }
 
                 consumer.operation(err, destinations.values());
             }
-        }, MySQL.getTablePrefix());
+        }, connection.getTablePrefix());
     }
 
     public Collection<Destination> getDestinations() {
@@ -335,5 +349,17 @@ public class DestinationStorage {
         }
 
         return dest;
+    }
+
+    public boolean isActive() {
+        if (mySQLAdapter == null)
+            return false;
+        return mySQLAdapter.isActive();
+    }
+
+    public void close() {
+        if (mySQLAdapter == null)
+            return;
+        mySQLAdapter.disconnect();
     }
 }

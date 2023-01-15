@@ -69,7 +69,7 @@ public class Localization extends LocalizationEnum {
     public static final Localization COMMAND_DESTEDIT_NONAME = new Localization("command.destedit.noName", "<prefix/><red>Please enter the name of the destination.</red>");
     public static final Localization COMMAND_DESTEDIT_MULTIPLEDEST = new Localization("command.destedit.multiple", "<prefix/><red>There are several destinations with this name.<newLine><prefix/>Please also specify the server name.</red>");
     public static final Localization COMMAND_DESTEDIT_UNKOWNPLAYER = new Localization("command.destedit.unkownPlayer", "<prefix/><red>A player with the name <yellow>{input}</yellow> could not be found.</red>");
-    public static final Localization COMMAND_DESTEDIT_SAVEFAILED = new Localization("command.destedit.saveFailed", "<prefix/><red>An error occurred while saving the destination. Please contact an administrator.</red><newLine><red>{error}</red>");
+    public static final Localization COMMAND_DESTEDIT_SAVEFAILED = new Localization("command.destedit.saveFailed", "<prefix/><hover:show_text:'<white>{error}'><red>An error occurred while saving the destination. Please contact an administrator.</red></hover>");
     public static final Localization COMMAND_DESTEDIT_TELEPORT = new Localization("command.destedit.teleport", "<prefix/><gold>You have been teleported to the destination <yellow>{destination}</yellow>.");
     public static final Localization COMMAND_DESTEDIT_TELEPORT_OTHERSERVER = new Localization("command.destedit.teleport.otherServer", "<prefix/><red>The destination is on the server: <yellow>{server}</yellow></red>.");
     public static final Localization COMMAND_DESTEDIT_ADD_INVALIDTYPE = new Localization("command.destedit.teleport.add.invalidType", "<prefix/><red>Invalid station type.</red>");
@@ -115,6 +115,7 @@ public class Localization extends LocalizationEnum {
             <prefix/><green>FileName: </green><yellow>{fileName}</yellow>
             <prefix/><green>FileSize: </green><yellow>{fileSize}</yellow>
             <prefix/><red>You are on version: </red><yellow>{currentVersion} #{currentBuild}</yellow></click></hover>""");
+    public static final Localization UPDATE_ERROR = new Localization("update.error", "<prefix/><hover:show_text:'<white>{error}'><red>Unable to retrieve update informations</red></hover>");
 
     private Localization(String name, String defValue) {
         super(name, defValue);
