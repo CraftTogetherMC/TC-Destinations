@@ -11,7 +11,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
   
 #### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)  
   
-### Features:
+## Features:
 - Fancy paginated list of destinations (Works cross-server in a BungeeCord network)
 - Manage your destinations in a more advanced way
 - Teleport to your destinations
@@ -31,7 +31,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 ### Set up multiple customized enter-messages *(enterMessages.yml)*
 ![](https://i.imgur.com/8qRGMM4.png)
 
-### Commands & Permissions:
+## Commands & Permissions:
 
 #### Select Destination
 | Command                         | Permissions                           | Description                                                                       |
@@ -78,7 +78,7 @@ The route then firstly contains 'server2' and afterwards the destination you wan
   
 Thats it!  
 
-### F.A.Q
+## F.A.Q
 <details>
     <summary>Can I use this plugin without Bungeecord?</summary>
     Yes you can.
@@ -89,7 +89,7 @@ Thats it!
     Just use separate databases or table-prefixes for each server
 </details>
   
-### Libraries used
+## Libraries used
 - [CTCommons](https://github.com/CraftTogetherMC/CTCommons) (CraftTogether's plugin library)
 - [BKCommonLib](https://github.com/bergerhealer) (Extensive plugin library)
 - [Cloud](https://github.com/Incendo/cloud) (Command Framework)
