@@ -74,7 +74,7 @@ Let's name it server2 as well.
   
 If you now run `/destination` to set a destination, for your train and the destination is  
 on another server, TC-Destinations will create a [route](https://wiki.traincarts.net/p/TrainCarts/PathFinding#Route_Manager) for the train.  
-The route then firstly contains 'server2' and afterwards the destination you want to reach.   
+The route then firstly contains `server2` and afterwards the destination you want to reach.   
   
 Thats it!  
 
