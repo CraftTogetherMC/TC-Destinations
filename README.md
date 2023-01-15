@@ -58,7 +58,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 | `/destedit setlocation <destination> <player> [server]`  | craftbahn.command.destedit.setlocation  | Specifies the position of the destination (Mainly used to locate dynmap markers)                                           |
 | `/destedit updatemarker <destination> <player> [server]` | craftbahn.command.destedit.updatemarker | Renews all markers to be displayed on the dynmap                                                                           |
 
-#### Other commands
+#### Additional commands
 | Befehl                | Permission                 | Beschreibung                                                |
 |:----------------------|:---------------------------|:------------------------------------------------------------|
 | `/mobenter [radius]`  | craftbahn.command.mobenter | Allows animals around the selected train to board the train |
