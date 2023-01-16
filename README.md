@@ -1,8 +1,11 @@
 # TC-Destinations
-#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts) and a MySQL-Database
-
+#### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts), [CTCommons](https://github.com/CraftTogetherMC/CTCommons) and a MySQL-Database
+**Java-Version:** 17 or above  
+**Minecraft-Version:** 1.17.1 or above  
+  
 TC-Destinations is a plugin for minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
 It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and comes along with a bunch of features to manage destinations in a more advanced way.  
+It is very lightweight as database queries and network connections run completely asynchronously.
    
 This plugin was developed for the [CraftTogetherMC](https://github.com/CraftTogetherMC) minecraft-server, see also: [TC-Portals](https://github.com/CraftTogetherMC/TC-Portals)!  
    
@@ -11,7 +14,7 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
   
 #### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)  
   
-### Features:
+## Features:
 - Fancy paginated list of destinations (Works cross-server in a BungeeCord network)
 - Manage your destinations in a more advanced way
 - Teleport to your destinations
@@ -19,29 +22,29 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 - Dynmap integration *(A marker is created on the map for each destination)*
 - Commands to get mobs on/off train(s).
 - All root-commands renameable
-- All texts can be customized *(localization.yml)*
+- All texts can be customized
 
-### Choose your destination with `/destination`
+#### Choose your destination with `/destination`
 ![](https://i.imgur.com/vSkjgU3.png)
 
-### Clickable paginated list of all your saved destinations `/destinations`
+#### Clickable paginated list of all your saved destinations `/destinations`
 ![](https://i.imgur.com/a6VdIq0.png)
 ![](https://i.imgur.com/mUETMfv.png)
 
-### Set up multiple customized enter-messages *(enterMessages.yml)*
+#### Set up multiple customized enter-messages *(enterMessages.yml)*
 ![](https://i.imgur.com/8qRGMM4.png)
 
-### Commands & Permissions:
+## Commands & Permissions:
 
-#### Select Destination
-| Command                         | Permissions                           | Description                                                                       |
+#### Select a Destination
+| Command                         | Permission                            | Description                                                                       |
 |:--------------------------------|:--------------------------------------|:----------------------------------------------------------------------------------|
 | `/destination`                  | craftbahn.command.destination         | Shows basic information about using the command                                   |
 | `/destination <name>`           | craftbahn.command.destination         | Sets the specified destination to the currently selected train                    |
 | `/destinations [type]`          | craftbahn.command.destinations        | Shows a list of all destinations                                                  |
 | `/destinations [type] [filter]` | craftbahn.command.destinations.filter | Shows a filtered list of all destinations **Filter flags:** `--server` `--player` |  
 
-#### Manage destinations
+#### Manage your destinations
 | Command                                                  | Permissions                             | Description                                                                                                                |
 |:---------------------------------------------------------|:----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
 | `/destedit info <destination> [server]`                  | craftbahn.command.destedit.info         | Displays detailed information about the specified destination                                                              |
@@ -58,19 +61,28 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
 | `/destedit setlocation <destination> <player> [server]`  | craftbahn.command.destedit.setlocation  | Specifies the position of the destination (Mainly used to locate dynmap markers)                                           |
 | `/destedit updatemarker <destination> <player> [server]` | craftbahn.command.destedit.updatemarker | Renews all markers to be displayed on the dynmap                                                                           |
 
-#### Other commands
-| Befehl                | Permission                 | Beschreibung                                                |
+#### Additional commands
+| Command               | Permission                 | Description                                                 |
 |:----------------------|:---------------------------|:------------------------------------------------------------|
 | `/mobenter [radius]`  | craftbahn.command.mobenter | Allows animals around the selected train to board the train |
 | `/mobeject`           | craftbahn.command.mobeject | Ejects all animals from the selected train                  |
 
-### Libraries used
-- [BKCommonLib](https://github.com/bergerhealer) (Extensive plugin library)
-- [Cloud](https://github.com/Incendo/cloud) (Command Framework)
-- [Adventure](https://github.com/KyoriPowered/adventure) (UI Framework)
+## Pathfinding across servers (BungeeCord)
+If you're using [TC-Portals](https://github.com/CraftTogetherMC/TC-Portals) to create cross-server portals, with a little extra work,  
+it is possible to reach destinations on another server.  
+  
+For example, if you want to drive from server1 to a destination on server2,  
+you need to create a [destination](https://wiki.traincarts.net/p/TrainCarts/Signs/Destination) on server1 that leads to the portal, which leads to server2.  
+Let's name it server2 as well.  
+  
+If you now run `/destination` to set a destination, for your train and the destination is  
+on another server, TC-Destinations will create a [route](https://wiki.traincarts.net/p/TrainCarts/PathFinding#Route_Manager) for the train.  
+The route then firstly contain the destination: `server2` and then afterwards,  
+the destination you want to reach.   
+  
+Thats it!  
 
-
-### F.A.Q
+## F.A.Q
 <details>
     <summary>Can I use this plugin without Bungeecord?</summary>
     Yes you can.
@@ -80,7 +92,16 @@ Also, a lot of appreciation goes to the People behind [Cloud](https://github.com
     <summary>I don't want other servers' destinations to be listed. What can I do?</summary>
     Just use separate databases or table-prefixes for each server
 </details>
-
+  
+## Libraries used
+- [CTCommons](https://github.com/CraftTogetherMC/CTCommons) (CraftTogether's plugin library)
+- [BKCommonLib](https://github.com/bergerhealer) (Extensive plugin library)
+- [Adventure](https://docs.adventure.kyori.net) (Very neat UI-Framework for Bukkit/Bungeecord and more)
+- [MiniMessage](https://docs.adventure.kyori.net/minimessage) (Text format to represent chat components)
+- [Cloud](https://github.com/Incendo/cloud) (Command Framework)
+- [HikariCP](https://github.com/brettwooldridge/HikariCP) (High-performance, JDBC connection pool)
+- [MySQL Connector/J](https://github.com/mysql/mysql-connector-j) (JDBC-Driver)
+  
 ### MySQL Table-structure:
 
 ``` sql
