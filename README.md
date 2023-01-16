@@ -1,6 +1,8 @@
 # TC-Destinations
 #### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts), [CTCommons](https://github.com/CraftTogetherMC/CTCommons) and a MySQL-Database
-
+**Java-Version:** 17 or above  
+**Minecraft-Version:** 1.17.1 or above  
+  
 TC-Destinations is a plugin for minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
 It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and comes along with a bunch of features to manage destinations in a more advanced way.  
 It is very lightweight as database queries and network connections run completely asynchronously.
