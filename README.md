@@ -3,14 +3,14 @@
 **Java-Version:** 17 or above  
 **Minecraft-Version:** 1.17.1 or above  
   
-TC-Destinations is a plugin for minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
+TC-Destinations is a plugin for Minecraft servers using [SpigotMC](https://www.spigotmc.org), [PaperMC](https://papermc.io) or forks of these projects.   
 It serves as an add-on for the [TrainCarts](https://github.com/bergerhealer/TrainCarts) plugin and comes along with a bunch of features to manage destinations in a more advanced way.  
 It is very lightweight as database queries and network connections run completely asynchronously.
    
-This plugin was developed for the [CraftTogetherMC](https://github.com/CraftTogetherMC) minecraft-server, see also: [TC-Portals](https://github.com/CraftTogetherMC/TC-Portals)!  
+This plugin was developed for the [CraftTogetherMC](https://github.com/CraftTogetherMC) Minecraft server, see also: [TC-Portals](https://github.com/CraftTogetherMC/TC-Portals)!  
    
 ### A big thank you and lots of love go out to [TeamBergerhealer](https://github.com/bergerhealer)  
-Also, a lot of appreciation goes to the People behind [Cloud](https://github.com/Incendo/cloud) and [Adventure](https://github.com/KyoriPowered/adventure)!  
+Also, a lot of appreciation goes to the people behind [Cloud](https://github.com/Incendo/cloud) and [Adventure](https://github.com/KyoriPowered/adventure)!  
   
 #### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)  
   
