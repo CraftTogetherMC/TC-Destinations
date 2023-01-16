@@ -138,6 +138,30 @@ public class Commands {
         }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
     }
 
+    @CommandMethod("tcdestinations reload")
+    @CommandDescription("This command reloads the configuration of the plugin")
+    public void tcdestinations_reload(
+            final CommandSender sender
+    ) {
+        plugin.getLogger().info("Disconnecting destination-storage...");
+        plugin.getDestinationStorage().disconnect();
+
+        plugin.getLogger().info("Reloading config.yml...");
+        plugin.reloadConfig();
+
+        plugin.getLogger().info("Reloading enterMessages.yml...");
+        plugin.getEnterMessages().load();
+
+        plugin.getLogger().info("Reloading localization...");
+        plugin.getLocalizationManager().loadLocalization(plugin.getConfig().getString("Settings.Language"));
+
+        plugin.getLogger().info("Reconnecting destination-storage...");
+        plugin.getDestinationStorage().connect();
+
+        plugin.getLogger().info("Reload completed...");
+        PluginUtil.adventure().sender(sender).sendMessage(Localization.CONFIG_RELOADED.deserialize());
+    }
+
     @CommandMethod(value="${command.mobenter} [radius]", requiredSender=Player.class)
     @CommandDescription("Lässt Tiere in der nahen Umgebung in den ausgewählten Zug einsteigen.")
     @CommandPermission("craftbahn.command.mobenter")

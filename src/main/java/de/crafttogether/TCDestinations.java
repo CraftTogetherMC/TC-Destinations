@@ -81,16 +81,18 @@ public final class TCDestinations extends JavaPlugin {
         pluginManager.registerEvents(new TrainEnterListener(),this);
 
         // Initialize LocalizationManager
-        localizationManager = new LocalizationManager(this, Localization.class,
-                getConfig().getString("Settings.Language"), "en_EN", "locales");
+        localizationManager = new LocalizationManager(this, Localization.class, "en_EN", "locales");
 
         localizationManager.addHeader("");
         localizationManager.addHeader("There are also 'global' placeholders which can be used in every message.");
         localizationManager.addHeader("StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)");
         localizationManager.addHeader("Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}");
         localizationManager.addHeader("Content: <header/> <prefix/> <footer/>");
-        localizationManager.writeHeaders();
 
+        // Load localization
+        localizationManager.loadLocalization(getConfig().getString("Settings.Language"));
+
+        // Add global MiniMessage tags
         localizationManager.addTagResolver("prefix", Localization.PREFIX.deserialize());
         localizationManager.addTagResolver("header", Localization.HEADER.deserialize());
         localizationManager.addTagResolver("footer", Localization.FOOTER.deserialize());
@@ -135,14 +137,15 @@ public final class TCDestinations extends JavaPlugin {
         // bStats
         new Metrics(this, 17416);
 
-        getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " enabled.");
+        String build = PluginUtil.getPluginFile(this).getString("build");
+        getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " (build: " + build + ") enabled.");
     }
 
     @Override
     public void onDisable() {
         // Shutdown MySQL-Adapter
         if(destinationStorage != null)
-            destinationStorage.close();
+            destinationStorage.disconnect();
     }
 
     public String getServerName() { return serverName; }

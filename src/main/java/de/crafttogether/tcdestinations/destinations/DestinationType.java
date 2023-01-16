@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class DestinationType {
-    private static final List<DestinationType> types = new ArrayList<>();
+    private static List<DestinationType> types = new ArrayList<>();
 
     private final String name;
     private final String displayName;
@@ -53,6 +53,7 @@ public class DestinationType {
 
     @SuppressWarnings("unchecked")
     public static void registerTypes(FileConfiguration config) {
+        types = new ArrayList<>();
         List<?> typesList = config.getList("DestinationTypes");
 
         for (Object object : Objects.requireNonNull(typesList)) {

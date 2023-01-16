@@ -9,7 +9,9 @@ public class Localization extends LocalizationEnum {
     public static final Localization HEADER = new Localization("header", "<yellow>-------------- <red><bold>TCDestinations</bold></red> --------------<yellow/>");
     public static final Localization FOOTER = new Localization("footer", "<yellow>----------------------------------------</yellow>");
 
-    public static final Localization COMMAND_NOPERM = new Localization("command.noPerm", "<red>You do not have permission, ask an admin to do this for you.</red>");
+    public static final Localization CONFIG_RELOADED = new Localization("config.reloaded", "<prefix/><green>Configuration reloaded.</green>");
+
+    public static final Localization COMMAND_NOPERM = new Localization("command.noPerm", "<hover:show_text:'<red>{permission}'><red>You do not have permission, ask an admin to do this for you.</red></hover>");
     public static final Localization COMMAND_NOTRAIN = new Localization("command.noTrain", "<prefix/><red>Please enter a train first.</red>");
 
     public static final Localization COMMAND_DESTINATION_NOTEXIST = new Localization("command.destination.notExist", "<prefix/><red>No destination named <yellow>{input}</yellow> was found.</red>");

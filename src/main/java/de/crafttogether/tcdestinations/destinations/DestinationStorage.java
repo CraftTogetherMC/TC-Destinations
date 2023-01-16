@@ -19,32 +19,42 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class DestinationStorage {
-    private final MySQLAdapter mySQLAdapter;
     private final TCDestinations plugin = TCDestinations.plugin;
-    private final TreeMap<Integer, Destination> destinations = new TreeMap<>();
+
+    private MySQLAdapter mySQLAdapter;
+    private TreeMap<Integer, Destination> destinations;
 
     public DestinationStorage() {
+        this.connect();
+    }
+
+    public void connect() {
+        if (this.isActive())
+            return;
+
+        this.destinations = new TreeMap<>();
+
         // Initialize MySQLAdapter
-        mySQLAdapter = new MySQLAdapter(plugin,
-                plugin.getConfig().getString("MySQL.Host"),
-                plugin.getConfig().getInt("MySQL.Port"),
-                plugin.getConfig().getString("MySQL.Username"),
-                plugin.getConfig().getString("MySQL.Password"),
-                plugin.getConfig().getString("MySQL.Database"),
-                plugin.getConfig().getString("MySQL.TablePrefix"));
+        this.mySQLAdapter = new MySQLAdapter(plugin,
+                this.plugin.getConfig().getString("MySQL.Host"),
+                this.plugin.getConfig().getInt("MySQL.Port"),
+                this.plugin.getConfig().getString("MySQL.Username"),
+                this.plugin.getConfig().getString("MySQL.Password"),
+                this.plugin.getConfig().getString("MySQL.Database"),
+                this.plugin.getConfig().getString("MySQL.TablePrefix"));
 
         // Register DestinationTypes from config.yml
-        DestinationType.registerTypes(plugin.getConfig());
+        DestinationType.registerTypes(this.plugin.getConfig());
 
         // Create Tables if missing
-        MySQLConnection connection = mySQLAdapter.getConnection();
+        MySQLConnection connection = this.mySQLAdapter.getConnection();
         if (connection == null)
             return;
 
         try (ResultSet result = connection.query("SHOW TABLES LIKE '%sdestinations';", connection.getTablePrefix())) {
 
             if (result != null && !result.next()) {
-                plugin.getLogger().info("[MySQL]: Create Table '" + connection.getTablePrefix() + "destinations' ...");
+                this.plugin.getLogger().info("[MySQL]: Create Table '" + connection.getTablePrefix() + "destinations' ...");
 
                 connection.execute("""
                     CREATE TABLE `%sdestinations` (
@@ -77,24 +87,39 @@ public class DestinationStorage {
             }
         }
         catch (SQLException ex) {
-            plugin.getLogger().warning("[MySQL]: " + ex.getMessage());
+            this.plugin.getLogger().warning("[MySQL]: " + ex.getMessage());
         }
         finally {
             connection.close();
         }
 
         // Load all destinations from database into our cache
-        Bukkit.getServer().getScheduler().runTask(TCDestinations.plugin, () -> loadAll((err, destinations) -> {
+        Bukkit.getServer().getScheduler().runTask(this.plugin, () -> loadAll((err, destinations) -> {
             if (err == null)
-                plugin.getLogger().info("Loaded " + destinations.size() + " destinations");
+                this.plugin.getLogger().info("Loaded " + destinations.size() + " destinations");
 
             // Add Dynmmap-Markers
-            DynmapMarker.setupMarkers(plugin.getDestinationStorage().getDestinations());
+            DynmapMarker.setupMarkers(this.plugin.getDestinationStorage().getDestinations());
         }));
     }
 
+    public boolean isActive() {
+        if (this.mySQLAdapter == null)
+            return false;
+
+        return this.mySQLAdapter.isActive();
+    }
+
+    public void disconnect() {
+        if (this.mySQLAdapter == null)
+            return;
+
+        this.mySQLAdapter.disconnect();
+        this.mySQLAdapter = null;
+    }
+
     private void insert(Destination destination, MySQLConnection.Consumer<SQLException, Destination> consumer) {
-        MySQLConnection connection = mySQLAdapter.getConnection();
+        MySQLConnection connection = this.mySQLAdapter.getConnection();
 
         NetworkLocation loc = destination.getLocation();
         NetworkLocation tpLoc = destination.getTeleportLocation();
@@ -137,20 +162,23 @@ public class DestinationStorage {
         ");",
 
         (err, lastInsertedId) -> {
-            if (err != null)
-                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+            if (err != null) {
+                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                consumer.operation(err, null);
+            }
+            else {
+                // Add to cache
+                destination.setId(lastInsertedId);
+                this.destinations.put(lastInsertedId, destination);
+                consumer.operation(null, destination);
+            }
 
-            // Add to cache
-            destination.setId(lastInsertedId);
-            destinations.put(lastInsertedId, destination);
-
-            consumer.operation(err, destination);
             connection.close();
         }, connection.getTablePrefix());
     }
 
     public void update(Destination destination, MySQLConnection.Consumer<SQLException, Integer> consumer) {
-        MySQLConnection connection = mySQLAdapter.getConnection();
+        MySQLConnection connection = this.mySQLAdapter.getConnection();
 
         NetworkLocation loc = destination.getLocation();
         NetworkLocation tpLoc = destination.getTeleportLocation();
@@ -176,21 +204,27 @@ public class DestinationStorage {
         "WHERE `%sdestinations`.`id` = %s;",
 
         (err, affectedRows) -> {
-            if (err != null)
-                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
-
-            consumer.operation(err, affectedRows);
+            if (err != null) {
+                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                consumer.operation(err, null);
+            }
+            else {
+                // Update cache
+                destinations.put(destination.getId(), destination);
+                consumer.operation(null, affectedRows);
+            }
             connection.close();
         }, connection.getTablePrefix(), connection.getTablePrefix(), destination.getId());
     }
 
     // TODO: Trigger if other server updates a destination
     public void load(int destinationId, Consumer<SQLException, Destination> consumer) {
-        MySQLConnection connection = mySQLAdapter.getConnection();
+        MySQLConnection connection = this.mySQLAdapter.getConnection();
 
         connection.queryAsync("SELECT * FROM `%sdestinations` WHERE `id` = %s", (err, result) -> {
             if (err != null) {
-                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                consumer.operation(err, null);
             }
 
             else {
@@ -202,11 +236,11 @@ public class DestinationStorage {
 
                         // Update cache
                         if (dest != null)
-                            destinations.put(dest.getId(), dest);
+                            this.destinations.put(dest.getId(), dest);
                     }
                 } catch (SQLException ex) {
                     err = ex;
-                    plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                    this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 }
                 finally {
                     connection.close();
@@ -218,16 +252,16 @@ public class DestinationStorage {
     }
 
     public void delete(int destinationId, Consumer<SQLException, Integer> consumer) {
-        MySQLConnection connection = mySQLAdapter.getConnection();
+        MySQLConnection connection = this.mySQLAdapter.getConnection();
 
         connection.updateAsync("DELETE FROM `%sdestinations` WHERE `id` = %s", (err, affectedRows) -> {
             if (err != null) {
-                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 consumer.operation(err, null);
             }
             else {
                 // Update cache
-                destinations.remove(destinationId);
+                this.destinations.remove(destinationId);
 
                 consumer.operation(null, affectedRows);
                 connection.close();
@@ -236,11 +270,13 @@ public class DestinationStorage {
     }
 
     public void loadAll(Consumer<SQLException, Collection<Destination>> consumer) {
-        MySQLConnection connection = mySQLAdapter.getConnection();
+        MySQLConnection connection = this.mySQLAdapter.getConnection();
+
+        this.destinations = new TreeMap<>();
 
         connection.queryAsync("SELECT * FROM `%sdestinations`", (err, result) -> {
             if (err != null) {
-                plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
                 consumer.operation(err, null);
             }
 
@@ -251,29 +287,29 @@ public class DestinationStorage {
 
                         // Update cache
                         if (dest != null)
-                            destinations.put(dest.getId(), dest);
+                            this.destinations.put(dest.getId(), dest);
                     }
                 } catch (SQLException ex) {
                     err = ex;
-                    plugin.getLogger().warning("[MySQL]: Error: " + ex.getMessage());
+                    this.plugin.getLogger().warning("[MySQL]: Error: " + ex.getMessage());
                 }
                 finally {
                     connection.close();
                 }
 
-                consumer.operation(err, destinations.values());
+                consumer.operation(err, this.destinations.values());
             }
         }, connection.getTablePrefix());
     }
 
     public Collection<Destination> getDestinations() {
-        return destinations.values();
+        return this.destinations.values();
     }
 
     public Collection<Destination> getDestinations(String name) {
         List<Destination> list = new ArrayList<>();
 
-        for (Destination dest : destinations.values()) {
+        for (Destination dest : this.destinations.values()) {
             if (dest.getName().equalsIgnoreCase(name))
                 list.add(dest);
         }
@@ -282,21 +318,21 @@ public class DestinationStorage {
     }
 
     public Destination getDestination(int id) {
-        for (Destination dest : destinations.values())
+        for (Destination dest : this.destinations.values())
             if (dest.getId() == id) return dest;
 
         return null;
     }
 
     public Destination getDestination(String destinationName, String serverName) {
-        for (Destination dest : destinations.values())
+        for (Destination dest : this.destinations.values())
             if (dest.getName().equalsIgnoreCase(destinationName) && dest.getServer().equalsIgnoreCase(serverName)) return dest;
 
         return null;
     }
 
     public void addDestination(String name, UUID owner, DestinationType type, Location loc, Boolean isPublic, Consumer<SQLException, Destination> consumer) {
-        String serverName = plugin.getServerName();
+        String serverName = this.plugin.getServerName();
         NetworkLocation ctLoc = NetworkLocation.fromBukkitLocation(loc, serverName);
 
         Destination dest = new Destination(name, serverName, Objects.requireNonNull(loc.getWorld()).getName(), owner, new ArrayList<>(), type, ctLoc, ctLoc, isPublic);
@@ -322,14 +358,14 @@ public class DestinationStorage {
                 for (String uuid : uuids) participants.add(UUID.fromString(uuid));
             } catch (Exception e) {
                 e.printStackTrace();
-                plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");
+                this.plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");
             }
 
             String type = result.getString("type");
             DestinationType destinationType = DestinationType.getFromName(type);
 
             if (destinationType == null) {
-                plugin.getLogger().warning("DestinationType '" + type + "' was not found at config.yml");
+                this.plugin.getLogger().warning("DestinationType '" + type + "' was not found at config.yml");
                 return null;
             }
 
@@ -344,22 +380,10 @@ public class DestinationStorage {
             dest.setPublic(result.getBoolean("public"));
         }
         catch (Exception err) {
-            plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+            this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
             err.printStackTrace();
         }
 
         return dest;
-    }
-
-    public boolean isActive() {
-        if (mySQLAdapter == null)
-            return false;
-        return mySQLAdapter.isActive();
-    }
-
-    public void close() {
-        if (mySQLAdapter == null)
-            return;
-        mySQLAdapter.disconnect();
     }
 }
