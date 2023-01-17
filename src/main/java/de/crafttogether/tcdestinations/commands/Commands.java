@@ -14,6 +14,7 @@ import de.crafttogether.TCDestinations;
 import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
 import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
@@ -128,10 +129,10 @@ public class Commands {
                 resolvers.add(Placeholder.set("currentVersion", currentVersion));
                 resolvers.add(Placeholder.set("currentBuild", currentBuild));
 
-                message = switch (build.getType()) {
-                    case RELEASE -> Localization.UPDATE_RELEASE.deserialize(resolvers);
-                    case SNAPSHOT -> Localization.UPDATE_DEVBUILD.deserialize(resolvers);
-                };
+                if (build.getType().equals(BuildType.RELEASE))
+                    message = Localization.UPDATE_RELEASE.deserialize(resolvers);
+                else
+                    message = Localization.UPDATE_DEVBUILD.deserialize(resolvers);
             }
 
             PluginUtil.adventure().sender(sender).sendMessage(message);
