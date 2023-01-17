@@ -129,6 +129,11 @@
             <id>MG-Dev Jenkins CI Maven Repository</id>
             <url>https://ci.mg-dev.eu/plugin/repository/everything</url>
         </repository>
+
+        <repository>
+            <id>dynmap-repo</id>
+            <url>https://repo.mikeprimm.com/</url>
+        </repository>
     </repositories>
 
     <dependencies>
