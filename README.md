@@ -24,8 +24,6 @@ This plugin was developed for the [CraftTogetherMC](https://github.com/CraftToge
 ### A big thank you and lots of love go out to [TeamBergerhealer](https://github.com/bergerhealer)  
 Also, a lot of appreciation goes to the people behind [Cloud](https://github.com/Incendo/cloud) and [Adventure](https://github.com/KyoriPowered/adventure)!  
   
-#### Dev-Builds: [See here](https://ci.craft-together-mc.de/job/TC%20Destinations/)  
-  
 ## Features:
 - Fancy paginated list of destinations (Works cross-server in a BungeeCord network)
 - Manage your destinations in a more advanced way
