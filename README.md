@@ -5,7 +5,12 @@
 ![](https://shields-io-visitor-counter.herokuapp.com/badge?page=CraftTogetherMC.TC-Destinations&style=flat-square)
 ![](https://img.shields.io/spiget/download-size/107441?style=flat-square)
 ![](https://img.shields.io/spiget/downloads/107441?style=flat-square)
-
+  
+[Development Builds](https://ci.craft-together-mc.de/job/TC-Destinations) / 
+[Javadocs](https://ci.craft-together-mc.de/job/TC%20Destinations/javadoc) / 
+[Modrinth](https://modrinth.com/plugin/tc-destinations) / 
+[SpigotMC](https://www.spigotmc.org/resources/tc-destinations.107441/)
+  
 # TC-Destinations
 #### Requires: [TrainCarts](https://github.com/bergerhealer/TrainCarts), [CTCommons](https://github.com/CraftTogetherMC/CTCommons) and a MySQL-Database
 **Java-Version:** 17 or above  
