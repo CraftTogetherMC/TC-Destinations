@@ -114,7 +114,7 @@ Thats it!
 ### MySQL Table-structure:
 
 ``` sql
-CREATE TABLE `ct_destinations` (
+CREATE TABLE `tc_destinations` (
   `id` int(11) NOT NULL,
   `name` varchar(24) NOT NULL,
   `type` varchar(24) NOT NULL,
@@ -131,10 +131,10 @@ CREATE TABLE `ct_destinations` (
   `tp_z` double DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-ALTER TABLE `ct_destinations`
+ALTER TABLE `tc_destinations`
   ADD PRIMARY KEY (`id`);
 
-ALTER TABLE `ct_destinations`
+ALTER TABLE `tc_destinations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 COMMIT;

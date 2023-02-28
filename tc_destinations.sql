@@ -18,10 +18,10 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Tabellenstruktur für Tabelle `ct_destinations`
+-- Tabellenstruktur für Tabelle `tc_destinations`
 --
 
-CREATE TABLE `ct_destinations` (
+CREATE TABLE `tc_destinations` (
   `id` int(11) NOT NULL,
   `name` varchar(24) NOT NULL,
   `type` varchar(24) NOT NULL,
@@ -45,9 +45,9 @@ CREATE TABLE `ct_destinations` (
 --
 
 --
--- Indizes für die Tabelle `ct_destinations`
+-- Indizes für die Tabelle `tc_destinations`
 --
-ALTER TABLE `ct_destinations`
+ALTER TABLE `tc_destinations`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -55,9 +55,9 @@ ALTER TABLE `ct_destinations`
 --
 
 --
--- AUTO_INCREMENT für Tabelle `ct_destinations`
+-- AUTO_INCREMENT für Tabelle `tc_destinations`
 --
-ALTER TABLE `ct_destinations`
+ALTER TABLE `tc_destinations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
