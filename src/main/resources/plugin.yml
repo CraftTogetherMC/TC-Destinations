@@ -1,6 +1,6 @@
 name: TCDestinations
-version: '${project.version}'
-build: '${project.build.number}'
+version: ${project.version}
+build: ${project.build.number}
 main: de.crafttogether.TCDestinations
 api-version: 1.17
 depend: [ CTCommons, BKCommonLib, Train_Carts ]
