@@ -5,7 +5,7 @@
 ![](https://img.shields.io/spiget/download-size/107441?style=flat-square)
 ![](https://img.shields.io/spiget/downloads/107441?style=flat-square)
   
-[Development Builds](https://ci.craft-together-mc.de/job/TC-Destinations) / 
+[Development Builds](https://ci.craft-together-mc.de/job/TC%20Destinations/) / 
 [Modrinth](https://modrinth.com/plugin/tc-destinations) / 
 [SpigotMC](https://www.spigotmc.org/resources/tc-destinations.107441/)
   
