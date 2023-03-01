@@ -16,6 +16,7 @@ MySQL:
   Username: username
   Password: password
   TablePrefix: tc_
+  JDBCArgs: useSSL=true&trustServerCertificate=true
 
 # Here you can customize destination-types
 # At this time it is not possible to use whitespaces in displayNames
