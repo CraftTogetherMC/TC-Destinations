@@ -58,23 +58,25 @@ public class DestinationStorage {
                 this.plugin.getLogger().info("[MySQL]: Create Table '" + connection.getTablePrefix() + "destinations' ...");
 
                 connection.execute("""
-                    CREATE TABLE `%sdestinations` (
-                      `id` int(11) NOT NULL,
-                      `name` varchar(24) NOT NULL,
-                      `type` varchar(24) NOT NULL,
-                      `server` varchar(24) NOT NULL,
-                      `world` varchar(24) NOT NULL,
-                      `loc_x` double NOT NULL,
-                      `loc_y` double NOT NULL,
-                      `loc_z` double NOT NULL,
-                      `owner` varchar(36) NOT NULL,
-                      `participants` longtext DEFAULT NULL,
-                      `public` tinyint(1) NOT NULL,
-                      `tp_x` double DEFAULT NULL,
-                      `tp_y` double DEFAULT NULL,
-                      `tp_z` double DEFAULT NULL
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                """, connection.getTablePrefix());
+                            CREATE TABLE `%sdestinations` (
+                              `id` int(11) NOT NULL,
+                              `name` varchar(24) NOT NULL,
+                              `type` varchar(24) NOT NULL,
+                              `server` varchar(24) NOT NULL,
+                              `world` varchar(24) NOT NULL,
+                              `loc_x` double NOT NULL,
+                              `loc_y` double NOT NULL,
+                              `loc_z` double NOT NULL,
+                              `owner` varchar(36) NOT NULL,
+                              `participants` longtext DEFAULT NULL,
+                              `public` tinyint(1) NOT NULL,
+                              `tp_x` double DEFAULT NULL,
+                              `tp_y` double DEFAULT NULL,
+                              `tp_z` double DEFAULT NULL,
+                              `tp_yaw` float DEFAULT NULL,
+                              `tp_pitch` float DEFAULT NULL
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                        """, connection.getTablePrefix());
 
                 connection.execute("""
                     ALTER TABLE `%sdestinations`
@@ -143,7 +145,9 @@ public class DestinationStorage {
             "`public`, " +
             "`tp_x`, " +
             "`tp_y`, " +
-            "`tp_z`" +
+            "`tp_z`," +
+            "`tp_yaw`, " +
+            "`tp_pitch` " +
         ") " +
 
         "VALUES (" +
@@ -159,7 +163,9 @@ public class DestinationStorage {
             (destination.isPublic() ? 1 : 0) + ", " +
             (tpLoc != null ? tpLoc.getX() : null) + ", " +
             (tpLoc != null ? tpLoc.getY() : null) + ", " +
-            (tpLoc != null ? tpLoc.getZ() : null) +
+            (tpLoc != null ? tpLoc.getZ() : null) + ", " +
+            (tpLoc != null ? tpLoc.getYaw() : null) + ", " +
+            (tpLoc != null ? tpLoc.getPitch() : null) +
         ");",
 
         (err, lastInsertedId) -> {
@@ -201,7 +207,9 @@ public class DestinationStorage {
             "`public`       = " + (destination.isPublic() ? 1 : 0) + ", " +
             "`tp_x`         = " + tpLoc.getX() + ", " +
             "`tp_y`         = " + tpLoc.getY() + ", " +
-            "`tp_z`         = " + tpLoc.getZ() + " " +
+            "`tp_z`         = " + tpLoc.getZ() + ", " +
+            "`tp_yaw`       = " + tpLoc.getYaw() + ", " +
+            "`tp_pitch`     = " + tpLoc.getPitch() + " " +
         "WHERE `%sdestinations`.`id` = %s;",
 
         (err, affectedRows) -> {
@@ -350,7 +358,7 @@ public class DestinationStorage {
             String world = result.getString("world");
 
             NetworkLocation loc = new NetworkLocation(server, world, result.getDouble("loc_x"), result.getDouble("loc_y"), result.getDouble("loc_z"));
-            NetworkLocation tpLoc = new NetworkLocation(server, world, result.getDouble("tp_x"), result.getDouble("tp_y"), result.getDouble("tp_z"));
+            NetworkLocation tpLoc = new NetworkLocation(server, world, result.getDouble("tp_x"), result.getDouble("tp_y"), result.getDouble("tp_z"), result.getFloat("tp_yaw"), result.getFloat("tp_pitch"));
             List<UUID> participants = new ArrayList<>();
 
             try {
