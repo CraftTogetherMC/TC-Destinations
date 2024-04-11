@@ -33,7 +33,10 @@ public class TrainEnterListener implements Listener {
                 continue;
 
             List<Placeholder> resolvers = new ArrayList<>();
-            resolvers.add(Placeholder.set("train", member.getGroup().getProperties().getTrainName()));
+            resolvers.add(Placeholder.set("trainName", member.getGroup().getProperties().getTrainName()));
+            resolvers.add(Placeholder.set("displayName", member.getGroup().getProperties().getDisplayNameOrEmpty()));
+            resolvers.add(Placeholder.set("speedLimit", member.getGroup().getProperties().getSpeedLimit()));
+            resolvers.add(Placeholder.set("destination", member.getGroup().getProperties().getDestination()));
 
             String message = (String) enterMessages.get(tag);
             for (Placeholder resolver : resolvers)
