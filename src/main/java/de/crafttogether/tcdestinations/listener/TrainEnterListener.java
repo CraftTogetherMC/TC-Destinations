@@ -28,14 +28,18 @@ public class TrainEnterListener implements Listener {
             return;
 
         ConfigurationNode enterMessages = plugin.getEnterMessages().getNode("enterMessages");
-        for (String tag : enterMessages.getValues().keySet()) {
-            if (!member.getProperties().getTags().contains(tag))
+
+        for (String tag : member.getProperties().getTags()) {
+            if (!enterMessages.getValues().containsKey(tag))
                 continue;
 
-            List<Placeholder> resolvers = new ArrayList<>();
-            resolvers.add(Placeholder.set("trainName", member.getGroup().getProperties().getTrainName()));
-            resolvers.add(Placeholder.set("displayName", member.getGroup().getProperties().getDisplayNameOrEmpty()));
-            resolvers.add(Placeholder.set("speedLimit", member.getGroup().getProperties().getSpeedLimit()));
+            if (enterMessages.getValues().containsKey(tag + "_with_destination") && member.getProperties().hasDestination())
+                tag = tag + "_with_destination";
+
+            List<Placeholder> resolvers = new ArrayList<>(plugin.getLocalizationManager().getPlaceholders());
+            resolvers.add(Placeholder.set("train_name", member.getGroup().getProperties().getTrainName()));
+            resolvers.add(Placeholder.set("display_name", member.getGroup().getProperties().getDisplayNameOrEmpty()));
+            resolvers.add(Placeholder.set("speed_limit", member.getGroup().getProperties().getSpeedLimit()));
             resolvers.add(Placeholder.set("destination", member.getGroup().getProperties().getDestination()));
 
             String message = (String) enterMessages.get(tag);

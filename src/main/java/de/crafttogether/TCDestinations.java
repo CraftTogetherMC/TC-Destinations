@@ -74,9 +74,6 @@ public final class TCDestinations extends JavaPlugin {
         // Set serverName
         serverName = getConfig().getString("Settings.ServerName");
 
-        enterMessages = new FileConfiguration(plugin.getDataFolder() + File.separator + "enterMessages.yml");
-        enterMessages.load();
-
         // Register Events
         pluginManager.registerEvents(new PlayerJoinListener(),this);
         pluginManager.registerEvents(new TrainEnterListener(),this);
@@ -98,16 +95,19 @@ public final class TCDestinations extends JavaPlugin {
         localizationManager.addTagResolver("header", Localization.HEADER.deserialize());
         localizationManager.addTagResolver("footer", Localization.FOOTER.deserialize());
 
+        // Register Commands
+        commands = new Commands();
+        commands.enable(this);
+
+        enterMessages = new FileConfiguration(plugin.getDataFolder() + File.separator + "enterMessages.yml");
+        enterMessages.load();
+
         // Initialize Storage
         destinationStorage = new DestinationStorage();
         if (!destinationStorage.isActive()) {
             pluginManager.disablePlugin(plugin);
             return;
         }
-
-        // Register Commands
-        commands = new Commands();
-        commands.enable(this);
 
         // Check for updates
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")

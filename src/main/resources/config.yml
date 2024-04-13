@@ -26,25 +26,25 @@ DestinationTypeAll:
   DisplayNameColor: yellow
 
 DestinationTypes:
-  - Name: station
+  - Name: STATION
     DisplayName: Station
     DisplayNameColor: yellow
     ShowOwnerInformations: false
     DynmapIcon: rail.png
 
-  - Name: main_station
+  - Name: MAIN_STATION
     DisplayName: Main-Station
     DisplayNameColor: yellow
     ShowOwnerInformations: false
     DynmapIcon: rail.png
 
-  - Name: public_station
+  - Name: PUBLIC_STATION
     DisplayName: Public
     DisplayNameColor: yellow
     ShowOwnerInformations: true
     DynmapIcon: rail.png
 
-  - Name: player_station
+  - Name: PLAYER_STATION
     DisplayName: Player-Station
     DisplayNameColor: gold
     ShowOwnerInformations: true

@@ -7,11 +7,19 @@ import com.bergerkiller.bukkit.common.cloud.CloudSimpleHandler;
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import com.bergerkiller.bukkit.common.utils.EntityUtil;
 import com.bergerkiller.bukkit.common.utils.WorldUtil;
+import com.bergerkiller.bukkit.tc.TrainCarts;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.components.RailPiece;
+import com.bergerkiller.bukkit.tc.pathfinding.*;
+import com.bergerkiller.bukkit.tc.rails.RailLookup;
 import com.google.common.collect.ImmutableMap;
+import de.crafttogether.CTCommons;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.dep.net.kyori.adventure.text.TextComponent;
+import de.crafttogether.common.dep.net.kyori.adventure.text.format.NamedTextColor;
+import de.crafttogether.common.dep.net.kyori.adventure.text.format.TextColor;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.update.BuildType;
@@ -19,16 +27,19 @@ import de.crafttogether.common.update.UpdateChecker;
 import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
+import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -161,6 +172,72 @@ public class Commands {
 
         plugin.getLogger().info("Reload completed...");
         PluginUtil.adventure().sender(sender).sendMessage(Localization.CONFIG_RELOADED.deserialize());
+    }
+
+    @CommandMethod("tcdestinations debug")
+    @CommandDescription("This command helps debugging destinations")
+    public void tcdestinations_debug(
+            final CommandSender sender
+    ) {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                PathNode randomNode = null;
+                Collection<PathWorld> worlds;
+                List<PathNode> destinations = new ArrayList<>();
+                Player player = (Player) sender;
+                World playerWorld = player.getWorld();
+                worlds = TrainCarts.plugin.getPathProvider().getWorlds();
+
+                for (PathWorld world : worlds) {
+                    for (PathNode node : world.getNodes()) {
+                        if (!node.containsOnlySwitcher()) {
+                            destinations.add(node);
+                        }
+
+                        else if (randomNode == null) {
+                            randomNode = node;
+                        }
+                    }
+                }
+
+                if (randomNode == null) {
+                    TextComponent output = Component.text("Es konnte keine Weiche gefunden werden.")
+                            .color(NamedTextColor.RED);
+                    CTCommons.adventure.player(player).sendMessage(output);
+                    return;
+                }
+
+                TextComponent output = Component.text("Überprüfe " + destinations.size() + " Verbindungen...")
+                        .color(NamedTextColor.YELLOW)
+                        .append(Component.newline());
+                CTCommons.adventure.player(player).sendMessage(output);
+
+                int errors = 0, connections = 0;
+
+                for (PathNode destination : destinations) {
+                    output = Component.empty();
+
+                    output = output.append(Component.text("Überprüfe Verbindung zu " + destination + "... ")
+                            .color(NamedTextColor.YELLOW));
+
+                    PathConnection[] route = randomNode.findRoute(destination);
+
+                    if (route.length > 0) {
+                        output = output.append(Component.text("Verbindung gefunden! (" + route.length + " Nodes)")
+                                .color(NamedTextColor.GREEN));
+                        connections++;
+                    }
+                    else {
+                        output = output.append(Component.text("Es konnte keine Verbindung gefunden werden!")
+                                .color(NamedTextColor.RED));
+                        errors++;
+                    }
+
+                    CTCommons.adventure.player(player).sendMessage(output);
+                }
+            }
+        });
     }
 
     @CommandMethod(value="${command.mobenter} [radius]", requiredSender=Player.class)
