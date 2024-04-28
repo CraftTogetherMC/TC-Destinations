@@ -153,7 +153,16 @@ public class DestinationList {
 
                 // Append teleport-button
                 if (dest.getLocation() != null && this.showLocation)
-                    btnDestination = btnDestination.append(Localization.COMMAND_DESTINATIONS_BTN_TELEPORT.deserialize());
+                    btnDestination = btnDestination.append(Localization.COMMAND_DESTINATIONS_BTN_TELEPORT.deserialize(
+                            Placeholder.set("destination", dest.getName()),
+                            Placeholder.set("server", dest.getLocation().getServer()),
+                            Placeholder.set("world", dest.getLocation().getWorld()),
+                            Placeholder.set("x", dest.getLocation().getX()),
+                            Placeholder.set("y", dest.getLocation().getY()),
+                            Placeholder.set("z", dest.getLocation().getZ()),
+                            Placeholder.set("yaw", dest.getLocation().getYaw()),
+                            Placeholder.set("pitch", dest.getLocation().getPitch())
+                    ));
 
                 page = page
                         .append(Localization.PREFIX.deserialize())
@@ -175,7 +184,7 @@ public class DestinationList {
     }
 
     public Component renderPage(int pageIndex) {
-        if (this.pages.size() < 1)
+        if (this.pages.isEmpty())
             return null;
 
         Component page = this.pages.get(pageIndex - 1);

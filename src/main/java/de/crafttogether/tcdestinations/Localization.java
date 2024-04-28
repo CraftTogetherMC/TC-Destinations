@@ -53,7 +53,7 @@ public class Localization extends LocalizationEnum {
     public static final Localization COMMAND_DESTINATIONS_BTN_FORWARDS_OFF = new Localization("command.destinations.btn.forwards.off", "<gray>Next</gray> <green>>>----</green>");
     public static final Localization COMMAND_DESTINATIONS_BTN_BACKWARDS_ON = new Localization("command.destinations.btn.backwards.on", "<hover:show_text:'<green>Previous page</green>'><click:run_command:{command}><green>----<<</green> <gold>Previous</gold></click></hover>");
     public static final Localization COMMAND_DESTINATIONS_BTN_BACKWARDS_OFF = new Localization("command.destinations.btn.backwards.off", "<green>----<<</green> <gray>Previous</gray>");
-    public static final Localization COMMAND_DESTINATIONS_BTN_TELEPORT = new Localization("command.destinations.btn.teleport", "<hover:show_text:'<green>Teleport to the station</green>'><click:run_command:{command_destedit} tp {destination}> <gray>[</gray><white>TP</white><gray>]</gray></click></hover>");
+    public static final Localization COMMAND_DESTINATIONS_BTN_TELEPORT = new Localization("command.destinations.btn.teleport", "<hover:show_text:'<green>Teleport to the station</green>'><click:run_command:{cmd_destedit} tp {destination} {server}> <gray>[</gray><white>TP</white><gray>]</gray></click></hover>");
 
     public static final Localization COMMAND_DESTEDIT_INFO = new Localization("command.destedit.info", """
             <header/>
