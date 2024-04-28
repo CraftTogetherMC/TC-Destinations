@@ -27,13 +27,14 @@ public class PlayerJoinListener implements Listener {
         Configuration config = plugin.getConfig();
 
         if ((config.getBoolean("Settings.Updates.Notify.DisableNotifications")
-            || !config.getBoolean("Settings.Updates.Notify.InGame"))
-            && !event.getPlayer().getName().equals("Ceddix"))
+            || !config.getBoolean("Settings.Updates.Notify.InGame")))
             return;
 
         new UpdateChecker(plugin).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
-            if (err != null)
-                err.printStackTrace();
+            if (err != null) {
+                plugin.getLogger().warning("An error occurred while receiving update information.");
+                plugin.getLogger().warning("Error: " + err.getMessage());
+            }
 
             if (build == null)
                 return;

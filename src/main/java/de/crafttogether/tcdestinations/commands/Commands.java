@@ -111,8 +111,10 @@ public class Commands {
             final CommandSender sender
     ) {
         new UpdateChecker(plugin).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
-            if (err != null)
-                err.printStackTrace();
+            if (err != null) {
+                plugin.getLogger().warning("An error occurred while receiving update information.");
+                plugin.getLogger().warning("Error: " + err.getMessage());
+            }
 
             List<Placeholder> resolvers = new ArrayList<>();
             Component message;
