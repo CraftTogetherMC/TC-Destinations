@@ -9,7 +9,7 @@
 #> There are also 'global' placeholders which can be used in enter-messages.
 #> StationType-Labels: {stationType} (replace 'stationType' with the name of your configured destination-types)
 #> Command-Names: {cmd_destination} {cmd_destinations} {cmd_destedit} {cmd_mobenter} {cmd_mobeject}
-#> Train-Properties: {train_name} {display_name} {speed_limit} {destination}
+#> Train-Properties: {train_name} {display_name} {speed_limit} {route} {current_destination} {next_destination} {final_destination}
 #> Content: <header/> <prefix/> <footer/>
 
 enterMessages:
@@ -18,6 +18,6 @@ enterMessages:
     <yellow>Please type <click:suggest_command:{cmd_destination} NAME><red>{cmd_destination}</red></click> to choose a destination</yellow></hover>
   train_with_destination: |
     <hover:show_text:'<green>Click me!'><green>You entered a train!</green><newLine/>
-    <yellow>This train is heading to: </yellow><gold>{destination}</gold></hover>
+    <yellow>This train is heading to: </yellow><gold>{final_destination}</gold></hover>
 
   coaster1: <green>Enjoy the ride!</green><newLine/>

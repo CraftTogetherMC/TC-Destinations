@@ -7,6 +7,7 @@ import de.crafttogether.TCDestinations;
 import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.util.PluginUtil;
+import de.crafttogether.tcdestinations.util.TCHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,11 +37,18 @@ public class TrainEnterListener implements Listener {
             if (enterMessages.getValues().containsKey(tag + "_with_destination") && member.getProperties().hasDestination())
                 tag = tag + "_with_destination";
 
+            List<String> destinationRoute = member.getGroup().getProperties().getDestinationRoute();
+            String current_destination = member.getGroup().getProperties().getDestination();
+            String finalDestination = destinationRoute.isEmpty() ? current_destination : destinationRoute.get(destinationRoute.size() -1);
+
             List<Placeholder> resolvers = new ArrayList<>(plugin.getLocalizationManager().getPlaceholders());
             resolvers.add(Placeholder.set("train_name", member.getGroup().getProperties().getTrainName()));
             resolvers.add(Placeholder.set("display_name", member.getGroup().getProperties().getDisplayNameOrEmpty()));
             resolvers.add(Placeholder.set("speed_limit", member.getGroup().getProperties().getSpeedLimit()));
-            resolvers.add(Placeholder.set("destination", member.getGroup().getProperties().getDestination()));
+            resolvers.add(Placeholder.set("route", TCHelper.stringifyRoute(destinationRoute)));
+            resolvers.add(Placeholder.set("current_destination", member.getGroup().getProperties().getDestination()));
+            resolvers.add(Placeholder.set("next_destination", member.getGroup().getProperties().getNextDestinationOnRoute()));
+            resolvers.add(Placeholder.set("final_destination", finalDestination));
 
             String message = (String) enterMessages.get(tag);
             for (Placeholder resolver : resolvers)
