@@ -9,7 +9,17 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class TCHelper {
+    public static String stringifyRoute(List<String> route) {
+        StringBuilder result = new StringBuilder();
+        for(String destination : route) {
+            result.append(destination);
+            result.append(" -> ");
+        }
+        return !result.isEmpty() ? result.substring(0, result.length() - 4): "";
+    }
 
     public static MinecartGroup getTrain(Player p) {
         Entity entity = p.getVehicle();
