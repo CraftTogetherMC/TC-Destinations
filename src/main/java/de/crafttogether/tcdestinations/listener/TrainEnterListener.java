@@ -7,6 +7,7 @@ import de.crafttogether.TCDestinations;
 import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.util.PluginUtil;
+import de.crafttogether.tcdestinations.speedometer.Speedometer;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class TrainEnterListener implements Listener {
     private final TCDestinations plugin = TCDestinations.plugin;
-
+    private final Speedometer speedometer = plugin.getSpeedometer();
     @EventHandler
     public void onVehicleEnter(VehicleEnterEvent event) {
         if (!(event.getEntered() instanceof Player player))
@@ -27,6 +28,11 @@ public class TrainEnterListener implements Listener {
         MinecartMember<?> member = MinecartMemberStore.getFromEntity(event.getVehicle());
         if (member == null)
             return;
+
+        // Add Speedometer for train if no one exists
+        String trainName = member.getGroup().getProperties().getTrainName();
+        if (speedometer.get(trainName) == null)
+            speedometer.add(trainName);
 
         ConfigurationNode enterMessages = plugin.getEnterMessages().getNode("enterMessages");
 

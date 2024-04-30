@@ -11,6 +11,7 @@ import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
+import de.crafttogether.tcdestinations.speedometer.Speedometer;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,6 +28,7 @@ public final class TCDestinations extends JavaPlugin {
     private Commands commands;
     private LocalizationManager localizationManager;
     private DestinationStorage destinationStorage;
+    private Speedometer speedometer;
     private FileConfiguration enterMessages;
 
     @Override
@@ -109,6 +111,10 @@ public final class TCDestinations extends JavaPlugin {
             return;
         }
 
+        // Start Speedometer-Task
+        if (getConfig().getBoolean("Speedometer.Enabled"))
+            speedometer = new Speedometer();
+
         // Check for updates
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
@@ -162,6 +168,8 @@ public final class TCDestinations extends JavaPlugin {
     public LocalizationManager getLocalizationManager() { return localizationManager; }
 
     public DestinationStorage getDestinationStorage() { return destinationStorage; }
+
+    public Speedometer getSpeedometer() { return speedometer; }
 
     public FileConfiguration getEnterMessages() {
         return enterMessages;
