@@ -1,17 +1,20 @@
 package de.crafttogether;
 
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
-import de.crafttogether.common.dep.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.localization.LocalizationManager;
+import de.crafttogether.common.plugin.BukkitPlatformLayer;
+import de.crafttogether.common.plugin.PlatformAbstractionLayer;
+import de.crafttogether.common.plugin.PluginInformation;
+import de.crafttogether.common.shaded.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
-import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
 import de.crafttogether.tcdestinations.speedometer.Speedometer;
+import de.crafttogether.tcdestinations.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,6 +24,7 @@ import java.io.File;
 
 public final class TCDestinations extends JavaPlugin {
     public static TCDestinations plugin;
+    public static PlatformAbstractionLayer platformLayer;
 
     private String serverName;
     private DynmapAPI dynmap;
@@ -34,6 +38,7 @@ public final class TCDestinations extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        platformLayer = new BukkitPlatformLayer(this);
 
         PluginManager pluginManager = Bukkit.getPluginManager();
 
@@ -62,12 +67,12 @@ public final class TCDestinations extends JavaPlugin {
         }
 
         // Export resources
-        PluginUtil.exportResource(this,"commands.yml");
-        PluginUtil.exportResource(this,"enterMessages.yml");
+        Util.exportResource(this,"commands.yml");
+        Util.exportResource(this,"enterMessages.yml");
 
         if (getDynmap() != null) {
-            PluginUtil.exportResource(this,"rail.png");
-            PluginUtil.exportResource(this,"minecart.png");
+            Util.exportResource(this,"rail.png");
+            Util.exportResource(this,"minecart.png");
         }
 
         // Create default config
@@ -81,7 +86,7 @@ public final class TCDestinations extends JavaPlugin {
         pluginManager.registerEvents(new TrainEnterListener(),this);
 
         // Initialize LocalizationManager
-        localizationManager = new LocalizationManager(this, Localization.class, "en_EN", "locales");
+        localizationManager = new LocalizationManager(platformLayer, Localization.class, "en_EN", "locales");
 
         localizationManager.addHeader("");
         localizationManager.addHeader("There are also 'global' placeholders which can be used in every message.");
@@ -119,7 +124,7 @@ public final class TCDestinations extends JavaPlugin {
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
         {
-            new UpdateChecker(this).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
+            new UpdateChecker(platformLayer).checkUpdatesAsync((err, installedVersion, installedBuild, build) -> {
                 if (err != null) {
                     plugin.getLogger().warning("An error occurred while receiving update information.");
                     plugin.getLogger().warning("Error: " + err.getMessage());
@@ -138,7 +143,7 @@ public final class TCDestinations extends JavaPlugin {
                     plugin.getLogger().warning("You can download it here: " + build.getUrl());
                     plugin.getLogger().warning("Version: " + build.getVersion() + " (build: " + build.getNumber() + ")");
                     plugin.getLogger().warning("FileName: " + build.getFileName() + " FileSize: " + build.getHumanReadableFileSize());
-                    plugin.getLogger().warning("You are on version: " + currentVersion + " (build: " + currentBuild + ")");
+                    plugin.getLogger().warning("You are on version: " + installedVersion + " (build: " + installedBuild + ")");
                 });
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
         }
@@ -146,8 +151,8 @@ public final class TCDestinations extends JavaPlugin {
         // bStats
         new Metrics(this, 17416);
 
-        String build = PluginUtil.getPluginFile(this).getString("build");
-        getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " (build: " + build + ") enabled.");
+        PluginInformation pluginInformation = platformLayer.getPluginInformation();
+        getLogger().info(pluginInformation.getName() + " v" + pluginInformation.getVersion() + " (build: " + pluginInformation.getBuild() + ") enabled.");
     }
 
     @Override

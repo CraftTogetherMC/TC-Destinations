@@ -2,12 +2,14 @@ package de.crafttogether.tcdestinations.listener;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
-import de.crafttogether.CTCommons;
+
 import de.crafttogether.TCDestinations;
-import de.crafttogether.common.dep.net.kyori.adventure.text.ComponentLike;
+import de.crafttogether.common.util.AudienceUtil;
 import de.crafttogether.tcdestinations.speedometer.Speedometer;
 import de.crafttogether.tcdestinations.util.TCHelper;
-import net.kyori.adventure.text.Component;
+
+import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,6 +35,6 @@ public class TrainExitListener implements Listener {
         }
 
         // Clear ActionBar
-        CTCommons.adventure.player(player).sendActionBar((ComponentLike) Component.empty());
+        AudienceUtil.Bukkit.audiences.player(player).sendActionBar(Component.empty());
     }
 }

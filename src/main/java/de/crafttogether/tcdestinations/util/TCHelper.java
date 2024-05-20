@@ -5,8 +5,11 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainPropertiesStore;
-import de.crafttogether.CTCommons;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.util.AudienceUtil;
+
+import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -14,6 +17,7 @@ import org.bukkit.block.BlockFace;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class TCHelper {
     public static String stringifyRoute(List<String> route) {
@@ -25,7 +29,12 @@ public class TCHelper {
         return !result.isEmpty() ? result.substring(0, result.length() - 4): "";
     }
 
-    public static MinecartGroup getTrain(Player p) {
+    public static MinecartGroup getTrain(UUID uuid) {
+        Player p = Bukkit.getServer().getPlayer(uuid);
+
+        if (p == null)
+            return null;
+
         Entity entity = p.getVehicle();
         MinecartMember<?> member = null;
 
@@ -88,7 +97,7 @@ public class TCHelper {
     public static void sendActionbar(MinecartMember<?> member, Component message) {
         for (Object passenger : getPlayerPassengers(member)) {
             if (passenger instanceof Player player)
-                CTCommons.adventure.player(player).sendActionBar(message);
+                AudienceUtil.Bukkit.audiences.player(player).sendActionBar(message);
         }
     }
 
@@ -96,7 +105,7 @@ public class TCHelper {
     public static void sendActionbar(MinecartMember<?> member, String permission, Component message) {
         for (Object passenger : getPlayerPassengers(member)) {
             if (passenger instanceof Player player && player.hasPermission(permission))
-                CTCommons.adventure.player(player).sendActionBar(message);
+                AudienceUtil.Bukkit.audiences.player(player).sendActionBar(message);
         }
     }
 }

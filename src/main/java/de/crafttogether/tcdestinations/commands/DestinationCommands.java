@@ -1,11 +1,11 @@
 package de.crafttogether.tcdestinations.commands;
 
-import cloud.commandframework.annotations.*;
 import com.bergerkiller.bukkit.common.utils.LogicUtil;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+
+import de.crafttogether.common.commands.CommandSender;
 import de.crafttogether.common.localization.Placeholder;
-import de.crafttogether.common.util.PluginUtil;
+import de.crafttogether.common.util.AudienceUtil;
 import de.crafttogether.common.NetworkLocation;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.Localization;
@@ -14,9 +14,13 @@ import de.crafttogether.tcdestinations.destinations.DestinationList;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
 import de.crafttogether.tcdestinations.util.TCHelper;
+import de.crafttogether.tcdestinations.util.Util;
+
+import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+import de.crafttogether.common.shaded.org.incendo.cloud.annotations.*;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -29,20 +33,20 @@ public class DestinationCommands {
 
     public DestinationCommands() { }
 
-    @CommandMethod(value="${command.destination}", requiredSender=Player.class)
+    @Command(value="${command.destination}", requiredSender=Player.class)
     @CommandDescription("Informationen zum /fahrziel Befehl")
-    @CommandPermission("craftbahn.command.destination")
+    @Permission("craftbahn.command.destination")
     public void fahrziel_info(
-            final Player sender
+            final Player player
     ) {
-        Localization.COMMAND_DESTINATION_INFO.message(sender);
+        Localization.COMMAND_DESTINATION_INFO.message(player.getUniqueId());
     }
 
-    @CommandMethod(value="${command.destination} <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destination} <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Setzt dem aktuell ausgewähltem Zug ein Fahrziel")
-    @CommandPermission("craftbahn.command.destination")
+    @Permission("craftbahn.command.destination")
     public void fahrziel(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server,
             final @Flag(value="page") Integer page
@@ -55,7 +59,7 @@ public class DestinationCommands {
 
         // No destination was found
         if (result.size() < 1 || result.get(0) == null) {
-            Localization.COMMAND_DESTINATION_NOTEXIST.message(sender,
+            Localization.COMMAND_DESTINATION_NOTEXIST.message(player.getUniqueId(),
                 Placeholder.set("input", name)
             );
         }
@@ -71,13 +75,13 @@ public class DestinationCommands {
             list.showLocation(true);
 
             if (!LogicUtil.nullOrEmpty(Localization.HEADER.get()))
-                PluginUtil.adventure().sender(sender).sendMessage(Localization.HEADER.deserialize().append(Component.newline()));
+                AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(Localization.HEADER.deserialize().append(Component.newline()));
 
             if (page == null) {
-                Localization.COMMAND_DESTINATION_MULTIPLEDEST.message(sender);
+                Localization.COMMAND_DESTINATION_MULTIPLEDEST.message(player.getUniqueId());
             }
 
-            list.sendPage(sender, (page == null ? 1 : page));
+            list.sendPage(player, (page == null ? 1 : page));
         }
 
         // A single destination was found
@@ -85,15 +89,15 @@ public class DestinationCommands {
             Destination destination = result.get(0);
 
             // Check permission and if destination is public
-            if (!destination.isPublic() && !sender.hasPermission("craftbahn.destination.see.private")) {
-                Localization.COMMAND_DESTINATION_NOPERMISSION.message(sender);
+            if (!destination.isPublic() && !player.hasPermission("craftbahn.destination.see.private")) {
+                Localization.COMMAND_DESTINATION_NOPERMISSION.message(player.getUniqueId());
                 return;
             }
 
             // Find train
-            MinecartGroup train = TCHelper.getTrain(sender);
+            MinecartGroup train = TCHelper.getTrain(player.getUniqueId());
             if (train == null) {
-                Localization.COMMAND_NOTRAIN.message(sender);
+                Localization.COMMAND_NOTRAIN.message(player.getUniqueId());
                 return;
             }
 
@@ -112,19 +116,19 @@ public class DestinationCommands {
                 train.getProperties().setDestination(destination.getName());
             }
 
-            Localization.COMMAND_DESTINATION_APPLIED.message(sender,
+            Localization.COMMAND_DESTINATION_APPLIED.message(player.getUniqueId(),
                 Placeholder.set("destination", destination.getName())
             );
         }
     }
 
-    @CommandMethod(value="${command.destinations} [type]", requiredSender=Player.class)
+    @Command(value="${command.destinations} [type]", requiredSender=Player.class)
     @CommandDescription("Zeigt eine Liste mit möglichen Fahrzielen")
-    @CommandPermission("craftbahn.command.destination")
+    @Permission("craftbahn.command.destination")
     public void fahrziele(
-            final Player sender,
+            final Player player,
             final @Argument(value="type", suggestions="destinationType") String type,
-            final @Flag(value="player", suggestions="onlinePlayers", permission = "craftbahn.command.destination.filter") String player,
+            final @Flag(value="player", suggestions="onlinePlayers", permission = "craftbahn.command.destination.filter") String targetPlayerName,
             final @Flag(value="server", suggestions="serverName", permission = "craftbahn.command.destination.filter") String server,
             final @Flag(value="page") Integer page
     ) {
@@ -147,12 +151,12 @@ public class DestinationCommands {
             showContentsPage = false;
 
         // Filter: player
-        if (player != null && !player.isEmpty()) {
-            OfflinePlayer offlinePlayer = PluginUtil.getOfflinePlayer(player);
+        if (targetPlayerName != null && !targetPlayerName.isEmpty()) {
+            OfflinePlayer offlinePlayer = Util.getOfflinePlayer(targetPlayerName);
             if (offlinePlayer == null)
                 return;
 
-            commandFlags += " --player " + player;
+            commandFlags += " --player " + targetPlayerName;
             showContentsPage = false;
             result = result.stream()
                     .filter(d -> d.getOwner().equals(offlinePlayer.getUniqueId()))
@@ -169,8 +173,8 @@ public class DestinationCommands {
                     .toList();
         }
 
-        if (result.size() < 1) {
-            Localization.COMMAND_DESTINATIONS_LIST_EMPTY.message(sender);
+        if (result.isEmpty()) {
+            Localization.COMMAND_DESTINATIONS_LIST_EMPTY.message(player.getUniqueId());
             return;
         }
 
@@ -182,19 +186,19 @@ public class DestinationCommands {
         list.showOwner(true);
         list.showLocation(true);
 
-        list.sendPage(sender, (page == null ? 1 : page));
+        list.sendPage(player, (page == null ? 1 : page));
     }
 
-    @CommandMethod(value="${command.destedit} info <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} info <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Zeigt Informationen zum angegebenen Fahrziel an")
-    @CommandPermission("craftbahn.command.destedit.info")
+    @Permission("craftbahn.command.destedit.info")
     public void fahrzieledit_info(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server,
             final @Flag(value="page") Integer page
     ) {
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
 
         OfflinePlayer owner = Bukkit.getOfflinePlayer(destination.getOwner());
         String unkown = Localization.COMMAND_DESTINATIONS_LIST_ENTRY_HOVER_OWNERUNKOWN.get();
@@ -207,7 +211,7 @@ public class DestinationCommands {
             participants.append(participant.getName()).append(", ");
         }
 
-        Localization.COMMAND_DESTEDIT_INFO.message(sender,
+        Localization.COMMAND_DESTEDIT_INFO.message(player.getUniqueId(),
                 Placeholder.set("name", destination.getName()),
                 Placeholder.set("id", destination.getId().toString()),
                 Placeholder.set("type", destination.getType().toString()),
@@ -220,34 +224,34 @@ public class DestinationCommands {
                 Placeholder.set("z", destination.getLocation().getZ()));
     }
 
-    @CommandMethod(value="${command.destedit} tp <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} tp <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Teleportiert den Spieler zum angegebenen Fahrziel")
-    @CommandPermission("craftbahn.command.destedit.teleport")
+    @Permission("craftbahn.command.destedit.teleport")
     public void fahrzieledit_teleport(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
 
         if (!destination.getServer().equalsIgnoreCase(plugin.getServerName())) {
-            Localization.COMMAND_DESTEDIT_TELEPORT_OTHERSERVER.message(sender,
+            Localization.COMMAND_DESTEDIT_TELEPORT_OTHERSERVER.message(player.getUniqueId(),
                     Placeholder.set("server", destination.getServer()));
             return;
         }
 
         // Teleport player
-        sender.teleport(destination.getTeleportLocation().getBukkitLocation());
+        player.teleport(destination.getTeleportLocation().getBukkitLocation());
 
-        Localization.COMMAND_DESTEDIT_TELEPORT.message(sender,
+        Localization.COMMAND_DESTEDIT_TELEPORT.message(player.getUniqueId(),
                 Placeholder.set("destination", destination.getName()));
     }
 
-    @CommandMethod(value="${command.destedit} add <destination> <type>", requiredSender=Player.class)
+    @Command(value="${command.destedit} add <destination> <type>", requiredSender=Player.class)
     @CommandDescription("Fügt ein neues Fahrziel der Liste hinzu")
-    @CommandPermission("craftbahn.command.destedit.add")
+    @Permission("craftbahn.command.destedit.add")
     public void fahrzieledit_add(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="type", suggestions="destinationType") String type
     ) {
@@ -257,16 +261,16 @@ public class DestinationCommands {
             destinationType = DestinationType.getFromDisplayName(type);
 
         if (destinationType == null) {
-            Localization.COMMAND_DESTEDIT_ADD_INVALIDTYPE.message(sender);
+            Localization.COMMAND_DESTEDIT_ADD_INVALIDTYPE.message(player.getUniqueId());
             return;
         }
 
-        plugin.getDestinationStorage().addDestination(name, sender.getUniqueId(), destinationType, sender.getLocation(), true, (err, destination) -> {
+        plugin.getDestinationStorage().addDestination(name, player.getUniqueId(), destinationType, player.getLocation(), true, (err, destination) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else {
-                Localization.COMMAND_DESTEDIT_ADD_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_ADD_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()),
                         Placeholder.set("id", String.valueOf(destination.getId())));
 
@@ -275,47 +279,47 @@ public class DestinationCommands {
         });
     }
 
-    @CommandMethod(value="${command.destedit} remove <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} remove <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Entfernt das angegebene Fahrziel aus der Liste")
-    @CommandPermission("craftbahn.command.destedit.remove")
+    @Permission("craftbahn.command.destedit.remove")
     public void fahrzieledit_remove(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
 
         plugin.getDestinationStorage().delete(destination.getId(), (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else
-                Localization.COMMAND_DESTEDIT_REMOVE.message(sender,
+                Localization.COMMAND_DESTEDIT_REMOVE.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()));
         });
     }
 
-    @CommandMethod(value="${command.destedit} addmember <destination> <player> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} addmember <destination> <player> [server]", requiredSender=Player.class)
     @CommandDescription("Fügt dem angegebene Fahrziel einen sekundären Besitzer hinzu")
-    @CommandPermission("craftbahn.command.destedit.addmember")
+    @Permission("craftbahn.command.destedit.addmember")
     public void fahrzieledit_addmember(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
-            final @Argument(value="player", suggestions="onlinePlayers") String player,
+            final @Argument(value="player", suggestions="onlinePlayers") String targetPlayerName,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        OfflinePlayer participant = PluginUtil.getOfflinePlayer(player);
+        OfflinePlayer participant = Util.getOfflinePlayer(targetPlayerName);
         if (!participant.hasPlayedBefore()) {
-            Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(sender,
-                    Placeholder.set("input", player));
+            Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(player.getUniqueId(),
+                    Placeholder.set("input", targetPlayerName));
             return;
         }
 
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
 
         if (destination.getParticipants().contains(participant.getUniqueId())) {
-            Localization.COMMAND_DESTEDIT_ADDMEMBER_FAILED.message(sender,
-                    Placeholder.set("input", player));
+            Localization.COMMAND_DESTEDIT_ADDMEMBER_FAILED.message(player.getUniqueId(),
+                    Placeholder.set("input", targetPlayerName));
             return;
         }
 
@@ -323,36 +327,36 @@ public class DestinationCommands {
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else
-                Localization.COMMAND_DESTEDIT_ADDMEMBER_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_ADDMEMBER_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()),
                         Placeholder.set("player", participant.getName()));
         });
     }
 
-    @CommandMethod(value="${command.destedit} removemember <destination> <player> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} removemember <destination> <player> [server]", requiredSender=Player.class)
     @CommandDescription("Entfernt dem angegebene Fahrziel einen sekundären Besitzer")
-    @CommandPermission("craftbahn.command.destedit.removemember")
+    @Permission("craftbahn.command.destedit.removemember")
     public void fahrzieledit_removemember(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
-            final @Argument(value="player", suggestions="onlinePlayers") String player,
+            final @Argument(value="player", suggestions="onlinePlayers") String targetPlayerName,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        OfflinePlayer participant = PluginUtil.getOfflinePlayer(player);
+        OfflinePlayer participant = Util.getOfflinePlayer(targetPlayerName);
         if (!participant.hasPlayedBefore()) {
-            Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(sender,
-                    Placeholder.set("input", player));
+            Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(player.getUniqueId(),
+                    Placeholder.set("input", targetPlayerName));
             return;
         }
 
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
 
         if (!destination.getParticipants().contains(participant.getUniqueId())) {
-            Localization.COMMAND_DESTEDIT_REMOVEMEMBER_FAILED.message(sender,
-                    Placeholder.set("input", player));
+            Localization.COMMAND_DESTEDIT_REMOVEMEMBER_FAILED.message(player.getUniqueId(),
+                    Placeholder.set("input", targetPlayerName));
             return;
         }
 
@@ -360,116 +364,116 @@ public class DestinationCommands {
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else
-                Localization.COMMAND_DESTEDIT_REMOVEMEMBER_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_REMOVEMEMBER_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()),
                         Placeholder.set("player", participant.getName()));
         });
     }
 
-    @CommandMethod(value="${command.destedit} setowner <destination> <player> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} setowner <destination> <player> [server]", requiredSender=Player.class)
     @CommandDescription("Legt den primären Besitzer des angegebenen Fahrziel fest")
-    @CommandPermission("craftbahn.command.destedit.setowner")
+    @Permission("craftbahn.command.destedit.setowner")
     public void fahrzieledit_setowner(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
-            final @Argument(value="player", suggestions="onlinePlayers") String player,
+            final @Argument(value="player", suggestions="onlinePlayers") String targetPlayerName,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        OfflinePlayer owner = PluginUtil.getOfflinePlayer(player);
+        OfflinePlayer owner = Util.getOfflinePlayer(targetPlayerName);
         if (!owner.hasPlayedBefore()) {
-            Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(sender,
-                    Placeholder.set("input", player));
+            Localization.COMMAND_DESTEDIT_UNKOWNPLAYER.message(player.getUniqueId(),
+                    Placeholder.set("input", targetPlayerName));
             return;
         }
 
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
         destination.setOwner(owner.getUniqueId());
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else
-                Localization.COMMAND_DESTEDIT_SETOWNER_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_SETOWNER_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()),
                         Placeholder.set("owner", owner.getName()));
         });
     }
 
-    @CommandMethod(value="${command.destedit} setpublic <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} setpublic <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Macht das angegebene Fahrziel öffentlich")
-    @CommandPermission("craftbahn.command.destedit.setpublic")
+    @Permission("craftbahn.command.destedit.setpublic")
     public void fahrzieledit_setpublic(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
         destination.setPublic(true);
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else {
-                Localization.COMMAND_DESTEDIT_SETPUBLIC_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_SETPUBLIC_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()));
             }
         });
     }
 
-    @CommandMethod(value="${command.destedit} setprivate <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} setprivate <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Macht das angegebene Fahrziel privat")
-    @CommandPermission("craftbahn.command.destedit.setprivate")
+    @Permission("craftbahn.command.destedit.setprivate")
     public void fahrzieledit_setprivate(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
         destination.setPublic(false);
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else {
-                Localization.COMMAND_DESTEDIT_SETPRIVATE_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_SETPRIVATE_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()));
             }
         });
     }
 
-    @CommandMethod(value="${command.destedit} setlocation <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} setlocation <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Legt die Marker-Position (Dynmap) des aktuellen Fahrziel fest")
-    @CommandPermission("craftbahn.command.destedit.setlocation")
+    @Permission("craftbahn.command.destedit.setlocation")
     public void fahrzieledit_setlocation(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination destination = findDestination(sender, name, server);
-        destination.setLocation(NetworkLocation.fromBukkitLocation(sender.getLocation(), plugin.getServerName()));
+        Destination destination = findDestination(player, name, server);
+        destination.setLocation(NetworkLocation.fromBukkitLocation(player.getLocation(), plugin.getServerName()));
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else {
-                Localization.COMMAND_DESTEDIT_SETLOCATION_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_SETLOCATION_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()));
             }
         });
     }
 
-    @CommandMethod(value="${command.destedit} settype <destination> <type> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} settype <destination> <type> [server]", requiredSender=Player.class)
     @CommandDescription("Legt den Typ des angegebenen Fahrziel fest")
-    @CommandPermission("craftbahn.command.destedit.settype")
+    @Permission("craftbahn.command.destedit.settype")
     public void fahrzieledit_settype(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="type", suggestions="destinationType") String type,
             final @Argument(value="server", suggestions="serverName") String server
@@ -480,71 +484,76 @@ public class DestinationCommands {
             destinationType = DestinationType.getFromDisplayName(type);
 
         if (destinationType == null) {
-            Localization.COMMAND_DESTEDIT_ADD_INVALIDTYPE.message(sender);
+            Localization.COMMAND_DESTEDIT_ADD_INVALIDTYPE.message(player.getUniqueId());
             return;
         }
 
-        Destination destination = findDestination(sender, name, server);
+        Destination destination = findDestination(player, name, server);
         destination.setType(destinationType);
 
         DestinationType finalDestinationType = destinationType;
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else {
-                Localization.COMMAND_DESTEDIT_SETTYPE_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_SETTYPE_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()),
                         Placeholder.set("type", finalDestinationType.getDisplayName()));
             }
         });
     }
 
-    @CommandMethod(value="${command.destedit} setwarp <destination> [server]", requiredSender=Player.class)
+    @Command(value="${command.destedit} setwarp <destination> [server]", requiredSender=Player.class)
     @CommandDescription("Legt die Warp-Position des aktuellen Fahrziel fest")
-    @CommandPermission("craftbahn.command.destedit.setwarp")
+    @Permission("craftbahn.command.destedit.setwarp")
     public void fahrzieledit_setwarp(
-            final Player sender,
+            final Player player,
             final @Argument(value="destination", suggestions="destinationName") String name,
             final @Argument(value="server", suggestions="serverName") String server
     ) {
-        Destination destination = findDestination(sender, name, server);
-        destination.setTeleportLocation(NetworkLocation.fromBukkitLocation(sender.getLocation(), plugin.getServerName()));
+        Destination destination = findDestination(player, name, server);
+        destination.setTeleportLocation(NetworkLocation.fromBukkitLocation(player.getLocation(), plugin.getServerName()));
 
         plugin.getDestinationStorage().update(destination, (err, affectedRows) -> {
             if (err != null)
-                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(sender,
+                Localization.COMMAND_DESTEDIT_SAVEFAILED.message(player.getUniqueId(),
                         Placeholder.set("error", err.getMessage()));
             else {
-                Localization.COMMAND_DESTEDIT_SETWARP_SUCCESS.message(sender,
+                Localization.COMMAND_DESTEDIT_SETWARP_SUCCESS.message(player.getUniqueId(),
                         Placeholder.set("destination", destination.getName()));
             }
         });
     }
 
-    @CommandMethod(value="${command.destedit} updatemarker", requiredSender=Player.class)
+    @Command(value="${command.destedit} updatemarker", requiredSender=Player.class)
     @CommandDescription("Alle Dynmap-Marker werden neu geladen")
-    @CommandPermission("craftbahn.command.destedit.updatemarker")
+    @Permission("craftbahn.command.destedit.updatemarker")
     public void fahrzieledit_updatemarker(
-            final Player sender
+            final Player player
     ) {
         if (plugin.getDynmap() == null) {
-            Localization.DYNMAP_NOTINSTALLED.message(sender);
+            Localization.DYNMAP_NOTINSTALLED.message(player.getUniqueId());
             return;
         }
 
         int markersCreated = DynmapMarker.setupMarkers(TCDestinations.plugin.getDestinationStorage().getDestinations());
-        Localization.COMMAND_DESTEDIT_UPDATEMARKER_SUCCESS.message(sender,
+        Localization.COMMAND_DESTEDIT_UPDATEMARKER_SUCCESS.message(player.getUniqueId(),
                 Placeholder.set("amount", String.valueOf(markersCreated)));
     }
 
-    @CommandMethod(value="${command.destedit} reload", requiredSender=Player.class)
+    @Command(value="${command.destedit} reload", requiredSender=Player.class)
     @CommandDescription("Konfiguration wird neu geladen")
-    @CommandPermission("craftbahn.command.destedit.reload")
+    @Permission("craftbahn.command.destedit.reload")
     public void fahrzieledit_reload(
-            final Player sender
+            final Player player
     ) {
-        sender.sendMessage("Coming soon");
+        TCDestinations.plugin.reloadConfig();
+        Localization.CONFIG_RELOADED.message(player.getUniqueId());
+    }
+
+    public Destination findDestination(Player player, String name, String server) {
+        return findDestination((CommandSender) player, name, server);
     }
 
     public Destination findDestination(CommandSender sender, String name, String server) {

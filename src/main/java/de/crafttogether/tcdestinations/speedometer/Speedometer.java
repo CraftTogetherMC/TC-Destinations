@@ -8,8 +8,10 @@ import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutSpawnEntityLivingHandle;
 import com.bergerkiller.generated.net.minecraft.world.entity.EntityHandle;
 import de.crafttogether.TCDestinations;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
 import de.crafttogether.tcdestinations.util.TCHelper;
+
+import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -18,7 +20,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 

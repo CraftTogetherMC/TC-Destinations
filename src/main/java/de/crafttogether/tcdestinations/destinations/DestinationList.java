@@ -1,15 +1,17 @@
 package de.crafttogether.tcdestinations.destinations;
 
 import de.crafttogether.TCDestinations;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
-import de.crafttogether.common.dep.net.kyori.adventure.text.event.ClickEvent;
-import de.crafttogether.common.dep.net.kyori.adventure.text.event.HoverEvent;
-import de.crafttogether.common.dep.net.kyori.adventure.text.format.NamedTextColor;
-import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.tag.Tag;
-import de.crafttogether.common.dep.net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import de.crafttogether.common.util.AudienceUtil;
 import de.crafttogether.common.localization.Placeholder;
-import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
+
+import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.event.ClickEvent;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.event.HoverEvent;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.format.NamedTextColor;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.minimessage.tag.Tag;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -227,9 +229,9 @@ public class DestinationList {
         build();
 
         if (pageIndex < 1)
-            Localization.COMMAND_DESTINATIONS_LIST_INVALIDPAGE.message(player);
+            Localization.COMMAND_DESTINATIONS_LIST_INVALIDPAGE.message(player.getUniqueId());
         else if (pageIndex > getPageCount())
-            Localization.COMMAND_DESTINATIONS_LIST_UNKOWNPAGE.message(player,
+            Localization.COMMAND_DESTINATIONS_LIST_UNKOWNPAGE.message(player.getUniqueId(),
                     Placeholder.set("pages", String.valueOf(getPageCount())));
         else {
             Component message = renderPage(pageIndex);
@@ -240,7 +242,7 @@ public class DestinationList {
                         .append(Localization.FOOTER.deserialize());
             }
 
-            PluginUtil.adventure().player(player).sendMessage(message);
+            AudienceUtil.Bukkit.audiences.player(player).sendMessage(message);
         }
     }
 

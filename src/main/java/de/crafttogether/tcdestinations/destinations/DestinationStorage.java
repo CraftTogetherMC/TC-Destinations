@@ -3,12 +3,14 @@ package de.crafttogether.tcdestinations.destinations;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
+
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.mysql.MySQLAdapter;
 import de.crafttogether.common.mysql.MySQLConnection;
 import de.crafttogether.common.mysql.MySQLConnection.Consumer;
 import de.crafttogether.common.NetworkLocation;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -35,7 +37,7 @@ public class DestinationStorage {
         this.destinations = new TreeMap<>();
 
         // Initialize MySQLAdapter
-        this.mySQLAdapter = new MySQLAdapter(plugin,
+        this.mySQLAdapter = new MySQLAdapter(TCDestinations.platformLayer,
                 this.plugin.getConfig().getString("MySQL.Host"),
                 this.plugin.getConfig().getInt("MySQL.Port"),
                 this.plugin.getConfig().getString("MySQL.Username"),

@@ -9,14 +9,17 @@ import com.bergerkiller.bukkit.tc.pathfinding.PathProvider;
 import com.bergerkiller.bukkit.tc.pathfinding.PathRailInfo;
 import com.bergerkiller.bukkit.tc.rails.RailLookup;
 import com.bergerkiller.bukkit.tc.utils.TrackMovingPoint;
+
 import de.crafttogether.TCDestinations;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
-import de.crafttogether.common.dep.net.kyori.adventure.text.event.ClickEvent;
-import de.crafttogether.common.dep.net.kyori.adventure.text.event.HoverEvent;
-import de.crafttogether.common.dep.net.kyori.adventure.text.format.NamedTextColor;
-import de.crafttogether.common.dep.net.kyori.adventure.text.format.TextDecoration;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import de.crafttogether.tcdestinations.util.Util;
+
+import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.event.ClickEvent;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.event.HoverEvent;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.format.NamedTextColor;
+import de.crafttogether.common.shaded.net.kyori.adventure.text.format.TextDecoration;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
