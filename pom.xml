@@ -64,21 +64,6 @@
                 </executions>
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <relocations>
-                        <!-- BKCommonLib relocations of Cloud command framework -->
-                        <relocation>
-                            <pattern>cloud.commandframework</pattern>
-                            <shadedPattern>com.bergerkiller.bukkit.common.dep.cloud</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>io.leangen.geantyref</pattern>
-                            <shadedPattern>com.bergerkiller.bukkit.common.dep.typetoken</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>me.lucko.commodore</pattern>
-                            <shadedPattern>com.bergerkiller.bukkit.common.dep.me.lucko.commodore</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
             </plugin>
 
