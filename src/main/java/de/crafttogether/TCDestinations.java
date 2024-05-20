@@ -43,7 +43,7 @@ public final class TCDestinations extends JavaPlugin {
         PluginManager pluginManager = Bukkit.getPluginManager();
 
         /* Check dependencies */
-        if (!pluginManager.isPluginEnabled("CTCommons")) {
+        if (!pluginManager.isPluginEnabled("CTCommonsBukkit")) {
             plugin.getLogger().warning("Couldn't find plugin: CTCommons");
             pluginManager.disablePlugin(plugin);
             return;
