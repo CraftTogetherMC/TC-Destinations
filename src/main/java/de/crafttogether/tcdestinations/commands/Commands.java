@@ -1,8 +1,9 @@
 package de.crafttogether.tcdestinations.commands;
 
-import cloud.commandframework.CommandManager;
-import cloud.commandframework.annotations.*;
-import cloud.commandframework.annotations.specifier.Range;
+import de.crafttogether.common.plugin.PlatformAbstractionLayer;
+import org.incendo.cloud.annotations.*;
+import org.incendo.cloud.annotation.specifier.Range;
+import org.incendo.cloud.annotations.string.PropertyReplacingStringProcessor;
 import com.bergerkiller.bukkit.common.cloud.CloudSimpleHandler;
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
 import com.bergerkiller.bukkit.common.utils.EntityUtil;
@@ -10,24 +11,18 @@ import com.bergerkiller.bukkit.common.utils.WorldUtil;
 import com.bergerkiller.bukkit.tc.TrainCarts;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
-import com.bergerkiller.bukkit.tc.controller.components.RailPiece;
 import com.bergerkiller.bukkit.tc.pathfinding.*;
-import com.bergerkiller.bukkit.tc.rails.RailLookup;
 import com.google.common.collect.ImmutableMap;
-import de.crafttogether.CTCommons;
 import de.crafttogether.TCDestinations;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
-import de.crafttogether.common.dep.net.kyori.adventure.text.TextComponent;
-import de.crafttogether.common.dep.net.kyori.adventure.text.format.NamedTextColor;
-import de.crafttogether.common.dep.net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
-import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
-import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.destinations.DestinationType;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import org.bukkit.Bukkit;
@@ -36,6 +31,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import de.crafttogether.common.util.AudienceUtil;
 
 import java.awt.*;
 import java.io.File;
@@ -47,11 +43,13 @@ import java.util.stream.Collectors;
 public class Commands {
     private static final TCDestinations plugin = TCDestinations.plugin;
     private static final CloudSimpleHandler cloud = new CloudSimpleHandler();
+    private static PlatformAbstractionLayer platformLayer;
 
     private FileConfiguration config;
 
     public void enable(TCDestinations plugin) {
         cloud.enable(plugin);
+        platformLayer = plugin.getPlatformLayer();
 
         // Command handlers
         DestinationCommands commands_destination = new DestinationCommands();
@@ -105,12 +103,10 @@ public class Commands {
         cloud.annotations(commands_destination);
     }
 
-    @CommandMethod("tcdestinations")
+    @Command("tcdestinations")
     @CommandDescription("Zeigt die aktuelle Version des Plugin")
-    public void tcdestinations(
-            final CommandSender sender
-    ) {
-        new UpdateChecker(plugin).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
+    public void tcdestinations(final CommandSender sender) {
+        new UpdateChecker(platformLayer).checkUpdatesAsync((err, installedVersion, installedBuild, build) -> {
             if (err != null) {
                 plugin.getLogger().warning("An error occurred while receiving update information.");
                 plugin.getLogger().warning("Error: " + err.getMessage());
@@ -120,11 +116,11 @@ public class Commands {
             Component message;
 
             if (build == null) {
-                resolvers.add(Placeholder.set("currentVersion", currentVersion));
-                resolvers.add(Placeholder.set("currentBuild", currentBuild));
+                resolvers.add(Placeholder.set("currentVersion", installedVersion));
+                resolvers.add(Placeholder.set("currentBuild", installedBuild));
 
                 message = plugin.getLocalizationManager().miniMessage()
-                        .deserialize("<prefix/><gold>" + plugin.getName() + " version: </gold><yellow>" + currentVersion + " #" + currentBuild + "</yellow><newLine/>");
+                        .deserialize("<prefix/><gold>" + plugin.getName() + " version: </gold><yellow>" + installedVersion + " #" + installedBuild + "</yellow><newLine/>");
 
                 if (err == null)
                     message = message.append(Localization.UPDATE_LASTBUILD.deserialize(resolvers));
@@ -139,20 +135,20 @@ public class Commands {
                 resolvers.add(Placeholder.set("fileName", build.getFileName()));
                 resolvers.add(Placeholder.set("fileSize", build.getHumanReadableFileSize()));
                 resolvers.add(Placeholder.set("url", build.getUrl()));
-                resolvers.add(Placeholder.set("currentVersion", currentVersion));
-                resolvers.add(Placeholder.set("currentBuild", currentBuild));
+                resolvers.add(Placeholder.set("currentVersion", installedVersion));
+                resolvers.add(Placeholder.set("currentBuild", installedBuild));
 
                 if (build.getType().equals(BuildType.RELEASE))
                     message = Localization.UPDATE_RELEASE.deserialize(resolvers);
                 else
                     message = Localization.UPDATE_DEVBUILD.deserialize(resolvers);
             }
-
-            PluginUtil.adventure().sender(sender).sendMessage(message);
+            if (!(sender instanceof Player player)) return;
+            AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(message);
         }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
     }
 
-    @CommandMethod("tcdestinations reload")
+    @Command("tcdestinations reload")
     @CommandDescription("This command reloads the configuration of the plugin")
     public void tcdestinations_reload(
             final CommandSender sender
@@ -173,10 +169,11 @@ public class Commands {
         plugin.getDestinationStorage().connect();
 
         plugin.getLogger().info("Reload completed...");
-        PluginUtil.adventure().sender(sender).sendMessage(Localization.CONFIG_RELOADED.deserialize());
+        if (!(sender instanceof Player player)) return;
+        AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(Localization.CONFIG_RELOADED.deserialize());
     }
 
-    @CommandMethod("tcdestinations debug")
+    @Command("tcdestinations debug")
     @CommandDescription("This command helps debugging destinations")
     public void tcdestinations_debug(
             final CommandSender sender
@@ -187,7 +184,7 @@ public class Commands {
                 PathNode randomNode = null;
                 Collection<PathWorld> worlds;
                 List<PathNode> destinations = new ArrayList<>();
-                Player player = (Player) sender;
+                if (!(sender instanceof Player player)) return;
                 World playerWorld = player.getWorld();
                 worlds = TrainCarts.plugin.getPathProvider().getWorlds();
 
@@ -206,14 +203,15 @@ public class Commands {
                 if (randomNode == null) {
                     TextComponent output = Component.text("Es konnte keine Weiche gefunden werden.")
                             .color(NamedTextColor.RED);
-                    CTCommons.adventure.player(player).sendMessage(output);
+                    AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(output);
                     return;
                 }
 
                 TextComponent output = Component.text("Überprüfe " + destinations.size() + " Verbindungen...")
                         .color(NamedTextColor.YELLOW)
                         .append(Component.newline());
-                CTCommons.adventure.player(player).sendMessage(output);
+                AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(output);
+
 
                 int errors = 0, connections = 0;
 
@@ -235,16 +233,15 @@ public class Commands {
                                 .color(NamedTextColor.RED));
                         errors++;
                     }
-
-                    CTCommons.adventure.player(player).sendMessage(output);
+                    AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(output);
                 }
             }
         });
     }
 
-    @CommandMethod(value="${command.mobenter} [radius]", requiredSender=Player.class)
+    @Command(value="${command.mobenter} [radius]", requiredSender=Player.class)
     @CommandDescription("Lässt Tiere in der nahen Umgebung in den ausgewählten Zug einsteigen.")
-    @CommandPermission("craftbahn.command.mobenter")
+    @Permission("craftbahn.command.mobenter")
     public void mobenter(
             final Player sender,
             @Argument(value="radius") @Range(min = "1", max = "16") Integer radius
@@ -252,7 +249,7 @@ public class Commands {
         MinecartGroup group = TCHelper.getTrain(sender);
 
         if (group == null) {
-            Localization.COMMAND_NOTRAIN.message(sender);
+            Localization.COMMAND_NOTRAIN.message(sender.getUniqueId());
             return;
         }
 
@@ -276,23 +273,23 @@ public class Commands {
         }
 
         if (entered > 0)
-            Localization.COMMAND_MOBENTER_SUCCESS.message(sender,
+            Localization.COMMAND_MOBENTER_SUCCESS.message(sender.getUniqueId(),
                     Placeholder.set("amount", String.valueOf(entered)));
         else
-            Localization.COMMAND_MOBENTER_FAILED.message(sender,
+            Localization.COMMAND_MOBENTER_FAILED.message(sender.getUniqueId(),
                     Placeholder.set("radius", String.valueOf(radius)));
     }
 
-    @CommandMethod(value="${command.mobeject}", requiredSender=Player.class)
+    @Command(value="${command.mobeject}", requiredSender=Player.class)
     @CommandDescription("Lässt alle Tiere aus dem ausgewählten Zug aussteigen.")
-    @CommandPermission("craftbahn.command.mobeject")
+    @Permission("craftbahn.command.mobeject")
     public void mobeject(
             final Player sender
     ) {
         MinecartGroup group = TCHelper.getTrain(sender);
 
         if (group == null) {
-            Localization.COMMAND_NOTRAIN.message(sender);
+            Localization.COMMAND_NOTRAIN.message(sender.getUniqueId());
             return;
         }
 
@@ -305,7 +302,7 @@ public class Commands {
             }
         }
 
-        Localization.COMMAND_MOBEJECT_SUCCESS.message(sender);
+        Localization.COMMAND_MOBEJECT_SUCCESS.message(sender.getUniqueId());
     }
 
     public static CloudSimpleHandler getCloud() {
@@ -316,7 +313,4 @@ public class Commands {
         return config;
     }
 
-    public CommandManager<?> getManager() {
-        return cloud.getManager();
-    }
 }

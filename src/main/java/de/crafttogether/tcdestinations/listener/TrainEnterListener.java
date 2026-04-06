@@ -4,7 +4,8 @@ import com.bergerkiller.bukkit.common.config.ConfigurationNode;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import de.crafttogether.TCDestinations;
-import de.crafttogether.common.dep.net.kyori.adventure.text.Component;
+import de.crafttogether.common.util.AudienceUtil;
+import net.kyori.adventure.text.Component;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.util.TCHelper;
@@ -55,7 +56,7 @@ public class TrainEnterListener implements Listener {
                 message = resolver.resolve(message);
 
             Component messageComponent = plugin.getLocalizationManager().miniMessage().deserialize(message);
-            PluginUtil.adventure().player(player).sendMessage(messageComponent);
+            AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(messageComponent);
         }
     }
 }

@@ -1,7 +1,9 @@
 package de.crafttogether;
 
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
-import de.crafttogether.common.dep.org.bstats.bukkit.Metrics;
+import de.crafttogether.common.plugin.BukkitPlatformLayer;
+import de.crafttogether.common.plugin.PlatformAbstractionLayer;
+import de.crafttogether.common.shaded.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
@@ -17,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapAPI;
 
 import java.io.File;
+import java.io.InputStream;
 
 public final class TCDestinations extends JavaPlugin {
     public static TCDestinations plugin;
@@ -28,6 +31,8 @@ public final class TCDestinations extends JavaPlugin {
     private LocalizationManager localizationManager;
     private DestinationStorage destinationStorage;
     private FileConfiguration enterMessages;
+    private PlatformAbstractionLayer platformLayer;
+
 
     @Override
     public void onEnable() {
@@ -35,41 +40,31 @@ public final class TCDestinations extends JavaPlugin {
 
         PluginManager pluginManager = Bukkit.getPluginManager();
 
-        /* Check dependencies */
-        if (!pluginManager.isPluginEnabled("CTCommons")) {
-            plugin.getLogger().warning("Couldn't find plugin: CTCommons");
-            pluginManager.disablePlugin(plugin);
-            return;
-        }
-
-        if (!pluginManager.isPluginEnabled("BKCommonLib")) {
-            plugin.getLogger().warning("Couldn't find plugin: BKCommonLib");
-            pluginManager.disablePlugin(plugin);
-            return;
-        }
-
-        if (!pluginManager.isPluginEnabled("Train_Carts")) {
-            plugin.getLogger().warning("Couldn't find plugin: TrainCarts");
-            pluginManager.disablePlugin(plugin);
-            return;
-        }
-
         if (pluginManager.isPluginEnabled("dynmap")) {
             plugin.getLogger().warning("Dynmap found!");
             dynmap = (DynmapAPI) pluginManager.getPlugin("dynmap");
         }
-
+        platformLayer = new BukkitPlatformLayer(plugin);
         // Export resources
-        PluginUtil.exportResource(this,"commands.yml");
-        PluginUtil.exportResource(this,"enterMessages.yml");
+        // Create default config
+        InputStream config;
+
+        config = platformLayer.getPluginInformation().getResourceFromJar("config.yml");
+        PluginUtil.saveDefaultConfig(platformLayer,"config.yml",config);
+
+        config = platformLayer.getPluginInformation().getResourceFromJar("commands.yml");
+        PluginUtil.saveDefaultConfig(platformLayer,"commands.yml",config);
+
+        config = platformLayer.getPluginInformation().getResourceFromJar("enterMessages.yml");
+        PluginUtil.saveDefaultConfig(platformLayer,"enterMessages.yml",config);
 
         if (getDynmap() != null) {
-            PluginUtil.exportResource(this,"rail.png");
-            PluginUtil.exportResource(this,"minecart.png");
-        }
+            config = platformLayer.getPluginInformation().getResourceFromJar("rail.png");
+            PluginUtil.saveDefaultConfig(platformLayer,"rail.png",config);
 
-        // Create default config
-        saveDefaultConfig();
+            config = platformLayer.getPluginInformation().getResourceFromJar("minecart.png");
+            PluginUtil.saveDefaultConfig(platformLayer,"minecart.png",config);
+        }
 
         // Set serverName
         serverName = getConfig().getString("Settings.ServerName");
@@ -79,7 +74,7 @@ public final class TCDestinations extends JavaPlugin {
         pluginManager.registerEvents(new TrainEnterListener(),this);
 
         // Initialize LocalizationManager
-        localizationManager = new LocalizationManager(this, Localization.class, "en_EN", "locales");
+        localizationManager = new LocalizationManager(platformLayer, Localization.class, "en_EN", "locales");
 
         localizationManager.addHeader("");
         localizationManager.addHeader("There are also 'global' placeholders which can be used in every message.");
@@ -113,7 +108,7 @@ public final class TCDestinations extends JavaPlugin {
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
         {
-            new UpdateChecker(this).checkUpdatesAsync((err, build, currentVersion, currentBuild) -> {
+            new UpdateChecker(platformLayer).checkUpdatesAsync((err, installedVersion, installedBuild, build) -> {
                 if (err != null) {
                     plugin.getLogger().warning("An error occurred while receiving update information.");
                     plugin.getLogger().warning("Error: " + err.getMessage());
@@ -132,7 +127,7 @@ public final class TCDestinations extends JavaPlugin {
                     plugin.getLogger().warning("You can download it here: " + build.getUrl());
                     plugin.getLogger().warning("Version: " + build.getVersion() + " (build: " + build.getNumber() + ")");
                     plugin.getLogger().warning("FileName: " + build.getFileName() + " FileSize: " + build.getHumanReadableFileSize());
-                    plugin.getLogger().warning("You are on version: " + currentVersion + " (build: " + currentBuild + ")");
+                    plugin.getLogger().warning("You are on version: " + installedVersion + " (build: " + installedBuild + ")");
                 });
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
         }
@@ -140,7 +135,7 @@ public final class TCDestinations extends JavaPlugin {
         // bStats
         new Metrics(this, 17416);
 
-        String build = PluginUtil.getPluginFile(this).getString("build");
+        String build = PluginUtil.getConfig(platformLayer).getString("build");
         getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " (build: " + build + ") enabled.");
     }
 
@@ -165,5 +160,9 @@ public final class TCDestinations extends JavaPlugin {
 
     public FileConfiguration getEnterMessages() {
         return enterMessages;
+    }
+
+    public PlatformAbstractionLayer getPlatformLayer() {
+        return platformLayer;
     }
 }
