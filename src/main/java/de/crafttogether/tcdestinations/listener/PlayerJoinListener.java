@@ -1,15 +1,16 @@
 package de.crafttogether.tcdestinations.listener;
 
 import de.crafttogether.TCDestinations;
+import de.crafttogether.common.plugin.PlatformAbstractionLayer;
+import de.crafttogether.common.util.AudienceUtil;
+import net.kyori.adventure.text.Component;
 import de.crafttogether.common.localization.Placeholder;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
-import de.crafttogether.common.util.AudienceUtil;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
-
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
-
 import org.bukkit.configuration.Configuration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -20,6 +21,8 @@ import java.util.List;
 
 public class PlayerJoinListener implements Listener {
     private static final TCDestinations plugin = TCDestinations.plugin;
+    private static PlatformAbstractionLayer platformLayer = plugin.getPlatformLayer();
+
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -31,8 +34,7 @@ public class PlayerJoinListener implements Listener {
         if ((config.getBoolean("Settings.Updates.Notify.DisableNotifications")
             || !config.getBoolean("Settings.Updates.Notify.InGame")))
             return;
-
-        new UpdateChecker(TCDestinations.platformLayer).checkUpdatesAsync((err, installedVersion, installedBuild, build) -> {
+        new UpdateChecker(platformLayer).checkUpdatesAsync((err, installedVersion, installedBuild, build) -> {
             if (err != null) {
                 plugin.getLogger().warning("An error occurred while receiving update information.");
                 plugin.getLogger().warning("Error: " + err.getMessage());
@@ -56,8 +58,8 @@ public class PlayerJoinListener implements Listener {
                 message = Localization.UPDATE_RELEASE.deserialize(resolvers);
             else
                 message = Localization.UPDATE_DEVBUILD.deserialize(resolvers);
-
-            AudienceUtil.Bukkit.audiences.player(event.getPlayer()).sendMessage(message);
+            Player viewer =  event.getPlayer();
+            AudienceUtil.getPlayer(viewer.getUniqueId()).sendMessage(message);
         }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"), 40L);
     }
 }

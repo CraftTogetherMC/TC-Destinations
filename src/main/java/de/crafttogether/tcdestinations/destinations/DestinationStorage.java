@@ -3,14 +3,13 @@ package de.crafttogether.tcdestinations.destinations;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
-
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.mysql.MySQLAdapter;
 import de.crafttogether.common.mysql.MySQLConnection;
 import de.crafttogether.common.mysql.MySQLConnection.Consumer;
 import de.crafttogether.common.NetworkLocation;
+import de.crafttogether.common.platform.bukkit.util.BukkitNetworkLocationAdapter;
 import de.crafttogether.tcdestinations.util.DynmapMarker;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -18,13 +17,15 @@ import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("unused")
 public class DestinationStorage {
     private final TCDestinations plugin = TCDestinations.plugin;
 
     private MySQLAdapter mySQLAdapter;
-    private TreeMap<Integer, Destination> destinations;
+    private  Map<Integer, Destination> destinations = new ConcurrentHashMap<>();
+
 
     public DestinationStorage() {
         this.connect();
@@ -34,10 +35,10 @@ public class DestinationStorage {
         if (this.isActive())
             return;
 
-        this.destinations = new TreeMap<>();
+        this.destinations.clear();
 
         // Initialize MySQLAdapter
-        this.mySQLAdapter = new MySQLAdapter(TCDestinations.platformLayer,
+        this.mySQLAdapter = new MySQLAdapter(plugin.getPlatformLayer(),
                 this.plugin.getConfig().getString("MySQL.Host"),
                 this.plugin.getConfig().getInt("MySQL.Port"),
                 this.plugin.getConfig().getString("MySQL.Username"),
@@ -187,37 +188,47 @@ public class DestinationStorage {
         NetworkLocation tpLoc = destination.getTeleportLocation();
         JsonArray participants = new JsonArray();
 
-        for (UUID uuid : destination.getParticipants())
+        for (UUID uuid : destination.getParticipants()) {
             participants.add(uuid.toString());
+        }
+
+        String locX = (loc != null) ? String.valueOf(loc.getX()) : "NULL";
+        String locY = (loc != null) ? String.valueOf(loc.getY()) : "NULL";
+        String locZ = (loc != null) ? String.valueOf(loc.getZ()) : "NULL";
+
+        String tpX = (tpLoc != null) ? String.valueOf(tpLoc.getX()) : "NULL";
+        String tpY = (tpLoc != null) ? String.valueOf(tpLoc.getY()) : "NULL";
+        String tpZ = (tpLoc != null) ? String.valueOf(tpLoc.getZ()) : "NULL";
 
         connection.updateAsync("UPDATE `%sdestinations` SET " +
-            "`name`         = '" + destination.getName() + "', " +
-            "`type`         = '" + destination.getType().getName() + "', " +
-            "`server`       = '" + destination.getServer() + "', " +
-            "`world`        = '" + destination.getWorld() + "', " +
-            "`loc_x`        = " + loc.getX() + ", " +
-            "`loc_y`        = " + loc.getY() + ", " +
-            "`loc_z`        = " + loc.getZ() + ", " +
-            "`owner`        = '" + destination.getOwner().toString() + "', " +
-            "`participants` = '" + participants + "', " +
-            "`public`       = " + (destination.isPublic() ? 1 : 0) + ", " +
-            "`tp_x`         = " + tpLoc.getX() + ", " +
-            "`tp_y`         = " + tpLoc.getY() + ", " +
-            "`tp_z`         = " + tpLoc.getZ() + " " +
-        "WHERE `%sdestinations`.`id` = %s;",
+                        "`name`         = '" + escapeSql(destination.getName()) + "', " +
+                        "`type`         = '" + escapeSql(destination.getType().getName()) + "', " +
+                        "`server`       = '" + escapeSql(destination.getServer()) + "', " +
+                        "`world`        = '" + escapeSql(destination.getWorld()) + "', " +
+                        "`loc_x`        = " + locX + ", " +
+                        "`loc_y`        = " + locY + ", " +
+                        "`loc_z`        = " + locZ + ", " +
+                        "`owner`        = '" + destination.getOwner() + "', " +
+                        "`participants` = '" + escapeSql(participants.toString()) + "', " +
+                        "`public`       = " + (destination.isPublic() ? 1 : 0) + ", " +
+                        "`tp_x`         = " + tpX + ", " +
+                        "`tp_y`         = " + tpY + ", " +
+                        "`tp_z`         = " + tpZ + " " +
+                        "WHERE `%sdestinations`.`id` = %s;",
+                (err, affectedRows) -> {
+                    try {
+                        if (err != null) {
+                            this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                            consumer.operation(err, null);
+                            return;
+                        }
 
-        (err, affectedRows) -> {
-            if (err != null) {
-                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
-                consumer.operation(err, null);
-            }
-            else {
-                // Update cache
-                destinations.put(destination.getId(), destination);
-                consumer.operation(null, affectedRows);
-            }
-            connection.close();
-        }, connection.getTablePrefix(), connection.getTablePrefix(), destination.getId());
+                        destinations.put(destination.getId(), destination);
+                        consumer.operation(null, affectedRows);
+                    } finally {
+                        connection.close();
+                    }
+                }, connection.getTablePrefix(), connection.getTablePrefix(), destination.getId());
     }
 
     // TODO: Trigger if other server updates a destination
@@ -258,15 +269,16 @@ public class DestinationStorage {
         MySQLConnection connection = this.mySQLAdapter.getConnection();
 
         connection.updateAsync("DELETE FROM `%sdestinations` WHERE `id` = %s", (err, affectedRows) -> {
-            if (err != null) {
-                this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
-                consumer.operation(err, null);
-            }
-            else {
-                // Update cache
-                this.destinations.remove(destinationId);
+            try {
+                if (err != null) {
+                    this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
+                    consumer.operation(err, null);
+                    return;
+                }
 
+                this.destinations.remove(destinationId);
                 consumer.operation(null, affectedRows);
+            } finally {
                 connection.close();
             }
         }, connection.getTablePrefix(), destinationId);
@@ -306,7 +318,7 @@ public class DestinationStorage {
     }
 
     public Collection<Destination> getDestinations() {
-        return this.destinations.values();
+        return new ArrayList<>(this.destinations.values());
     }
 
     public Collection<Destination> getDestinations(String name) {
@@ -336,57 +348,99 @@ public class DestinationStorage {
 
     public void addDestination(String name, UUID owner, DestinationType type, Location loc, Boolean isPublic, Consumer<SQLException, Destination> consumer) {
         String serverName = this.plugin.getServerName();
-        NetworkLocation ctLoc = NetworkLocation.fromBukkitLocation(loc, serverName);
+        NetworkLocation ctLoc = BukkitNetworkLocationAdapter.fromBukkitLocation(loc, serverName);
 
         Destination dest = new Destination(name, serverName, Objects.requireNonNull(loc.getWorld()).getName(), owner, new ArrayList<>(), type, ctLoc, ctLoc, isPublic);
         insert(dest, consumer);
     }
 
     private Destination setupDestination(ResultSet result) {
-        Destination dest = null;
-
         try {
             Integer id = result.getInt("id");
             String name = result.getString("name");
             String server = result.getString("server");
             String world = result.getString("world");
 
-            NetworkLocation loc = new NetworkLocation(server, world, result.getDouble("loc_x"), result.getDouble("loc_y"), result.getDouble("loc_z"));
-            NetworkLocation tpLoc = new NetworkLocation(server, world, result.getDouble("tp_x"), result.getDouble("tp_y"), result.getDouble("tp_z"));
-            List<UUID> participants = new ArrayList<>();
-
+            UUID owner;
             try {
-                Type listType = new TypeToken<List<String>>() {}.getType();
-                List<String> uuids = new Gson().fromJson(result.getString("participants"), listType);
-                for (String uuid : uuids) participants.add(UUID.fromString(uuid));
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.plugin.getLogger().warning("Error: Unable to read participants for '" + name + "'");
-            }
-
-            String type = result.getString("type");
-            DestinationType destinationType = DestinationType.getFromName(type);
-
-            if (destinationType == null) {
-                this.plugin.getLogger().warning("DestinationType '" + type + "' was not found at config.yml");
+                owner = UUID.fromString(result.getString("owner"));
+            } catch (Exception ex) {
+                this.plugin.getLogger().warning("Invalid owner UUID for destination '" + name + "'");
                 return null;
             }
 
-            dest = new Destination(name, id);
+            NetworkLocation loc = null;
+            double locX = result.getDouble("loc_x");
+            boolean locXNull = result.wasNull();
+            double locY = result.getDouble("loc_y");
+            boolean locYNull = result.wasNull();
+            double locZ = result.getDouble("loc_z");
+            boolean locZNull = result.wasNull();
+
+            if (!locXNull && !locYNull && !locZNull) {
+                loc = new NetworkLocation(server, world, locX, locY, locZ);
+            }
+
+            NetworkLocation tpLoc = null;
+            double tpX = result.getDouble("tp_x");
+            boolean tpXNull = result.wasNull();
+            double tpY = result.getDouble("tp_y");
+            boolean tpYNull = result.wasNull();
+            double tpZ = result.getDouble("tp_z");
+            boolean tpZNull = result.wasNull();
+
+            if (!tpXNull && !tpYNull && !tpZNull) {
+                tpLoc = new NetworkLocation(server, world, tpX, tpY, tpZ);
+            }
+
+            List<UUID> participants = new ArrayList<>();
+            String participantsJson = result.getString("participants");
+            if (participantsJson != null && !participantsJson.isBlank()) {
+                try {
+                    Type listType = new TypeToken<List<String>>() {}.getType();
+                    List<String> uuids = new Gson().fromJson(participantsJson, listType);
+                    if (uuids != null) {
+                        for (String uuid : uuids) {
+                            try {
+                                participants.add(UUID.fromString(uuid));
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    this.plugin.getLogger().warning("Unable to read participants for '" + name + "'");
+                }
+            }
+
+            String typeName = result.getString("type");
+            DestinationType destinationType = DestinationType.getFromName(typeName);
+            if (destinationType == null) {
+                this.plugin.getLogger().warning("DestinationType '" + typeName + "' was not found at config.yml");
+                return null;
+            }
+
+            Destination dest = new Destination(name, id);
             dest.setServer(server);
             dest.setWorld(world);
-            dest.setOwner(UUID.fromString(result.getString("owner")));
+            dest.setOwner(owner);
             dest.setParticipants(participants);
             dest.setType(destinationType);
             dest.setLocation(loc);
             dest.setTeleportLocation(tpLoc);
             dest.setPublic(result.getBoolean("public"));
-        }
-        catch (Exception err) {
+
+            return dest;
+        } catch (Exception err) {
             this.plugin.getLogger().warning("[MySQL]: Error: " + err.getMessage());
             err.printStackTrace();
+            return null;
         }
-
-        return dest;
     }
+    private String escapeSql(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replace("\\", "\\\\").replace("'", "''");
+    }
+
 }

@@ -1,6 +1,9 @@
 package de.crafttogether;
 
 import com.bergerkiller.bukkit.common.config.FileConfiguration;
+import de.crafttogether.common.plugin.BukkitPlatformLayer;
+import de.crafttogether.common.plugin.PlatformAbstractionLayer;
+import de.crafttogether.common.shaded.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.localization.LocalizationManager;
 import de.crafttogether.common.plugin.BukkitPlatformLayer;
 import de.crafttogether.common.plugin.PlatformAbstractionLayer;
@@ -8,6 +11,7 @@ import de.crafttogether.common.plugin.PluginInformation;
 import de.crafttogether.common.shaded.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
@@ -21,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapAPI;
 
 import java.io.File;
+import java.io.InputStream;
 
 public final class TCDestinations extends JavaPlugin {
     public static TCDestinations plugin;
@@ -42,41 +47,31 @@ public final class TCDestinations extends JavaPlugin {
 
         PluginManager pluginManager = Bukkit.getPluginManager();
 
-        /* Check dependencies */
-        if (!pluginManager.isPluginEnabled("CTCommonsBukkit")) {
-            plugin.getLogger().warning("Couldn't find plugin: CTCommons");
-            pluginManager.disablePlugin(plugin);
-            return;
-        }
-
-        if (!pluginManager.isPluginEnabled("BKCommonLib")) {
-            plugin.getLogger().warning("Couldn't find plugin: BKCommonLib");
-            pluginManager.disablePlugin(plugin);
-            return;
-        }
-
-        if (!pluginManager.isPluginEnabled("Train_Carts")) {
-            plugin.getLogger().warning("Couldn't find plugin: TrainCarts");
-            pluginManager.disablePlugin(plugin);
-            return;
-        }
-
         if (pluginManager.isPluginEnabled("dynmap")) {
             plugin.getLogger().warning("Dynmap found!");
             dynmap = (DynmapAPI) pluginManager.getPlugin("dynmap");
         }
 
         // Export resources
-        Util.exportResource(this,"commands.yml");
-        Util.exportResource(this,"enterMessages.yml");
+        // Create default config
+        InputStream config;
+
+        config = platformLayer.getPluginInformation().getResourceFromJar("config.yml");
+        PluginUtil.saveDefaultConfig(platformLayer,"config.yml",config);
+
+        config = platformLayer.getPluginInformation().getResourceFromJar("commands.yml");
+        PluginUtil.saveDefaultConfig(platformLayer,"commands.yml",config);
+
+        config = platformLayer.getPluginInformation().getResourceFromJar("enterMessages.yml");
+        PluginUtil.saveDefaultConfig(platformLayer,"enterMessages.yml",config);
 
         if (getDynmap() != null) {
-            Util.exportResource(this,"rail.png");
-            Util.exportResource(this,"minecart.png");
-        }
+            config = platformLayer.getPluginInformation().getResourceFromJar("rail.png");
+            PluginUtil.saveDefaultConfig(platformLayer,"rail.png",config);
 
-        // Create default config
-        saveDefaultConfig();
+            config = platformLayer.getPluginInformation().getResourceFromJar("minecart.png");
+            PluginUtil.saveDefaultConfig(platformLayer,"minecart.png",config);
+        }
 
         // Set serverName
         serverName = getConfig().getString("Settings.ServerName");
@@ -143,7 +138,7 @@ public final class TCDestinations extends JavaPlugin {
                     plugin.getLogger().warning("You can download it here: " + build.getUrl());
                     plugin.getLogger().warning("Version: " + build.getVersion() + " (build: " + build.getNumber() + ")");
                     plugin.getLogger().warning("FileName: " + build.getFileName() + " FileSize: " + build.getHumanReadableFileSize());
-                    plugin.getLogger().warning("You are on version: " + installedVersion + " (build: " + installedBuild + ")");
+                    plugin.getLogger().warning("You are on version: " + currentVersion + " (build: " + currentBuild + ")");
                 });
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
         }
@@ -178,5 +173,9 @@ public final class TCDestinations extends JavaPlugin {
 
     public FileConfiguration getEnterMessages() {
         return enterMessages;
+    }
+
+    public PlatformAbstractionLayer getPlatformLayer() {
+        return platformLayer;
     }
 }

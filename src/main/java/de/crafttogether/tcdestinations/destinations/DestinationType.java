@@ -1,8 +1,7 @@
 package de.crafttogether.tcdestinations.destinations;
 
-import de.crafttogether.common.shaded.net.kyori.adventure.text.format.NamedTextColor;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.format.TextColor;
-
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 

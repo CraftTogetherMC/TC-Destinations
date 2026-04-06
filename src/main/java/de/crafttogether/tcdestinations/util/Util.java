@@ -4,11 +4,10 @@ import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.google.common.io.ByteStreams;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.util.AudienceUtil;
-
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import de.crafttogether.common.util.PluginUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -56,6 +55,8 @@ public class Util {
 
         // Broadcast to online players with permission
         for (Player player : Bukkit.getOnlinePlayers()) {
+            if (plugin.getConfig().getBoolean("Settings.Debug")) continue;
+            AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(messageComponent);
             if (!player.hasPermission("tcdestinations.debug"))
                 continue;
 

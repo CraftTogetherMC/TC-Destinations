@@ -65,7 +65,7 @@ public class Localization extends LocalizationEnum {
             <prefix/><gold>Participants:</gold> <yellow>{participants}</yellow>
             <prefix/><gold>Server:</gold> <yellow>{server}</yellow>
             <prefix/><gold>World:</gold> <yellow>{world}</yellow>
-            <prefix/><gold>Coordinates:</gold> <yellow>{x} {x} {z}</yellow>
+            <prefix/><gold>Coordinates:</gold> <yellow>{x} {y} {z}</yellow>
             
             <footer/>""");
     public static final Localization COMMAND_DESTEDIT_NONAME = new Localization("command.destedit.noName", "<prefix/><red>Please enter the name of the destination.</red>");

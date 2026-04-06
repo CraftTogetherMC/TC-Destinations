@@ -2,6 +2,7 @@ package de.crafttogether.tcdestinations.util;
 
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.platform.bukkit.util.BukkitNetworkLocationAdapter;
 import de.crafttogether.tcdestinations.Localization;
 import de.crafttogether.tcdestinations.destinations.Destination;
 import org.bukkit.Bukkit;
@@ -123,8 +124,7 @@ public class DynmapMarker {
 
         for (Placeholder resolver : resolvers)
             markerHTML = resolver.resolve(markerHTML);
-
-        Location location = destination.getLocation().getBukkitLocation();
+        Location location =  BukkitNetworkLocationAdapter.toBukkitLocation(destination.getLocation());
         set.createMarker(destination.getName(), markerHTML, true, Objects.requireNonNull(location.getWorld()).getName(), location.getX(), location.getY(), location.getZ(), markerIcon, false);
         return true;
     }

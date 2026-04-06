@@ -2,16 +2,15 @@ package de.crafttogether.tcdestinations.destinations;
 
 import de.crafttogether.TCDestinations;
 import de.crafttogether.common.util.AudienceUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import de.crafttogether.common.localization.Placeholder;
+import de.crafttogether.common.util.PluginUtil;
 import de.crafttogether.tcdestinations.Localization;
-
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.event.ClickEvent;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.event.HoverEvent;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.format.NamedTextColor;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.minimessage.tag.Tag;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -241,8 +240,7 @@ public class DestinationList {
                         .append(Component.newline())
                         .append(Localization.FOOTER.deserialize());
             }
-
-            AudienceUtil.Bukkit.audiences.player(player).sendMessage(message);
+            AudienceUtil.getPlayer(player.getUniqueId()).sendMessage(message);
         }
     }
 

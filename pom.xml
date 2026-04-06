@@ -10,17 +10,18 @@
     <packaging>jar</packaging>
 
     <name>TCDestinations</name>
-    <description>TrainCarts-Addon which allows you to manage destinations in a more advanced way.</description>
+    <description>TrainCarts addon for advanced destination management.</description>
     <url>https://github.com/CraftTogetherMC/TCDestinations</url>
 
     <properties>
-        <java.version>17</java.version>
-        <project.ctcommons.version>1.0-BETA4</project.ctcommons.version>
-        <project.spigot.version>1.20.1-R0.1-SNAPSHOT</project.spigot.version>
-        <project.bkcommonlib.version>1.20.4-v4-SNAPSHOT</project.bkcommonlib.version>
-        <project.traincarts.version>1.20.4-v2-SNAPSHOT</project.traincarts.version>
-        <project.cloud.version>1.8.0-SNAPSHOT</project.cloud.version>
+        <java.version>21</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <project.spigot.version>1.21.4-R0.1-SNAPSHOT</project.spigot.version>
+        <project.bkcversion>2.0.0-SNAPSHOT</project.bkcversion>
+        <project.tcversion>2.0.0-SNAPSHOT</project.tcversion>
+
         <project.build.number>NO-CI</project.build.number>
     </properties>
 
@@ -38,15 +39,129 @@
         </profile>
     </profiles>
 
+    <repositories>
+        <repository>
+            <id>spigotmc-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+
+        <repository>
+            <id>mg-dev</id>
+            <url>https://ci.mg-dev.eu/plugin/repository/everything</url>
+        </repository>
+
+        <repository>
+            <id>dynmap-repo</id>
+            <url>https://repo.mikeprimm.com/</url>
+        </repository>
+
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.bergerkiller.bukkit</groupId>
+                <artifactId>BKCommonLib-bom</artifactId>
+                <version>${project.bkcversion}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>${project.spigot.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.crafttogether</groupId>
+            <artifactId>CTCommons</artifactId>
+            <version>1.0-BETA4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>BKCommonLib</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>TrainCarts</artifactId>
+            <version>${project.tcversion}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>us.dynmap</groupId>
+            <artifactId>dynmap-api</artifactId>
+            <version>3.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Nur wenn du Gson wirklich direkt nutzt -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Nur zum Kompilieren -->
+        <dependency>
+            <groupId>org.incendo</groupId>
+            <artifactId>cloud-paper</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.incendo</groupId>
+            <artifactId>cloud-annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.incendo</groupId>
+            <artifactId>cloud-minecraft-extras</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <doclint>none</doclint>
+                    <quiet>true</quiet>
                 </configuration>
             </plugin>
 
@@ -60,11 +175,52 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <!-- Haupt-JAR ersetzen, kein -all.jar -->
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+
+                            <!-- WICHTIG: keine Dependencies einpacken -->
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.incendo:cloud-paper</exclude>
+                                    <exclude>org.incendo:cloud-annotations</exclude>
+                                    <exclude>org.incendo:cloud-minecraft-extras</exclude>
+                                    <exclude>io.leangen.geantyref:*</exclude>
+                                    <exclude>me.lucko:commodore</exclude>
+                                    <exclude>net.kyori:*</exclude>
+                                </excludes>
+                            </artifactSet>
+
+                            <!-- Nur Klassenreferenzen umschreiben -->
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.incendo.cloud</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.cloud</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.leangen.geantyref</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.typetoken</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>me.lucko.commodore</pattern>
+                                    <shadedPattern>com.bergerkiller.bukkit.common.dep.me.lucko.commodore</shadedPattern>
+                                </relocation>
+                            </relocations>
+
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -73,93 +229,22 @@
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>version-less-jar</id>
+                        <id>copy-static-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
-                                <copy file="target/${project.name}-${project.version}.jar" tofile="target/static/${project.name}.jar"/>
-                                <copy file="target/${project.name}-${project.version}.jar" tofile="target/static/${project.name}-${project.version}-${project.build.number}.jar"/>
+                                <mkdir dir="target/static"/>
+                                <copy file="target/${project.artifactId}-${project.version}.jar"
+                                      tofile="target/static/${project.artifactId}.jar"
+                                      overwrite="true"/>
                             </target>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
-
-    <repositories>
-        <repository>
-            <id>ctogether</id>
-            <url>https://maven.craft-together-mc.de/</url>
-        </repository>
-
-        <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-
-        <repository>
-            <id>MG-Dev Jenkins CI Maven Repository</id>
-            <url>https://ci.mg-dev.eu/plugin/repository/everything</url>
-        </repository>
-
-        <repository>
-            <id>dynmap-repo</id>
-            <url>https://repo.mikeprimm.com/</url>
-        </repository>
-    </repositories>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${project.spigot.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>de.crafttogether</groupId>
-            <artifactId>CTCommons</artifactId>
-            <version>${project.ctcommons.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.bergerkiller.bukkit</groupId>
-            <artifactId>BKCommonLib</artifactId>
-            <version>${project.bkcommonlib.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.bergerkiller.bukkit</groupId>
-            <artifactId>TrainCarts</artifactId>
-            <version>${project.traincarts.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>us.dynmap</groupId>
-            <artifactId>dynmap-api</artifactId>
-            <version>3.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.10.1</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 </project>
