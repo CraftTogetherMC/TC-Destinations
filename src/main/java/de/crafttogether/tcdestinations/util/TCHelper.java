@@ -5,11 +5,22 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainPropertiesStore;
+import de.crafttogether.common.util.AudienceUtil;
+
+import net.kyori.adventure.text.Component;
+
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.block.BlockFace;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class TCHelper {
     public static String stringifyRoute(List<String> route) {
@@ -21,7 +32,12 @@ public class TCHelper {
         return !result.isEmpty() ? result.substring(0, result.length() - 4): "";
     }
 
-    public static MinecartGroup getTrain(Player p) {
+    public static MinecartGroup getTrain(UUID uuid) {
+        Player p = Bukkit.getServer().getPlayer(uuid);
+
+        if (p == null)
+            return null;
+
         Entity entity = p.getVehicle();
         MinecartMember<?> member = null;
 
@@ -40,5 +56,68 @@ public class TCHelper {
     public static MinecartGroup getTrain(String trainName) {
         TrainProperties properties = TrainPropertiesStore.get(trainName);
         return (properties != null && properties.hasHolder()) ? properties.getHolder() : null;
+    }
+
+    public static BlockFace getDirection(String junctionName) {
+        return switch (junctionName) {
+            default -> null;
+            case "n" -> BlockFace.NORTH;
+            case "e" -> BlockFace.EAST;
+            case "s" -> BlockFace.SOUTH;
+            case "w" -> BlockFace.WEST;
+        };
+    }
+
+    public static List<Player> getPlayerPassengers(MinecartMember<?> member) {
+        List<Player> passengers = new ArrayList<>();
+        for (Entity passenger : member.getEntity().getEntity().getPassengers())
+            if (passenger instanceof Player) passengers.add((Player) passenger);
+
+        return passengers;
+    }
+
+    public static List<Player> getPlayerPassengers(MinecartGroup group) {
+        List<Player> passengers = new ArrayList<>();
+        for (MinecartMember<?> member : group)
+            passengers.addAll(getPlayerPassengers(member));
+
+        return passengers;
+    }
+
+    // Send actionbar to all passengers of a train
+    public static void sendActionbar(MinecartGroup group, Component message) {
+        for (MinecartMember<?> member : group)
+            sendActionbar(member, message);
+    }
+
+    // Send permission-based actionbar to all passengers of a train
+    public static void sendActionbar(MinecartGroup group, String permission, Component message) {
+        for (MinecartMember<?> member : group)
+            sendActionbar(member, permission, message);
+    }
+
+    // Send actionBar to all passengers of a cart
+    public static void sendActionbar(MinecartMember<?> member, Component message) {
+        for (Object passenger : getPlayerPassengers(member)) {
+            if (passenger instanceof Player player) {
+                String legacy = LegacyComponentSerializer.legacySection().serialize(message);
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(legacy));
+            }
+        }
+    }
+
+    // Send permission-based actionbar to all passengers of a cart
+    public static void sendActionbar(MinecartMember<?> member, String permission, Component message) {
+        for (Object passenger : getPlayerPassengers(member)) {
+            if (passenger instanceof Player player && player.hasPermission(permission)) {
+                String legacy = LegacyComponentSerializer.legacySection().serialize(message);
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(legacy));
+                //AudienceUtil.Bukkit.audiences.player(player).sendActionBar(message);
+            }
+        }
+    }
+
+    public static <__TMP__> __TMP__ sendActionbar() {
+        return null;
     }
 }

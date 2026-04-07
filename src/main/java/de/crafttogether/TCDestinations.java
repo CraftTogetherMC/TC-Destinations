@@ -5,6 +5,10 @@ import de.crafttogether.common.plugin.BukkitPlatformLayer;
 import de.crafttogether.common.plugin.PlatformAbstractionLayer;
 import de.crafttogether.common.shaded.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.localization.LocalizationManager;
+import de.crafttogether.common.plugin.BukkitPlatformLayer;
+import de.crafttogether.common.plugin.PlatformAbstractionLayer;
+import de.crafttogether.common.plugin.PluginInformation;
+import de.crafttogether.common.shaded.org.bstats.bukkit.Metrics;
 import de.crafttogether.common.update.BuildType;
 import de.crafttogether.common.update.UpdateChecker;
 import de.crafttogether.common.util.PluginUtil;
@@ -13,6 +17,9 @@ import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
+import de.crafttogether.tcdestinations.listener.TrainExitListener;
+import de.crafttogether.tcdestinations.speedometer.Speedometer;
+import de.crafttogether.tcdestinations.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,6 +30,7 @@ import java.io.InputStream;
 
 public final class TCDestinations extends JavaPlugin {
     public static TCDestinations plugin;
+    public static PlatformAbstractionLayer platformLayer;
 
     private String serverName;
     private DynmapAPI dynmap;
@@ -30,13 +38,13 @@ public final class TCDestinations extends JavaPlugin {
     private Commands commands;
     private LocalizationManager localizationManager;
     private DestinationStorage destinationStorage;
+    private Speedometer speedometer;
     private FileConfiguration enterMessages;
-    private PlatformAbstractionLayer platformLayer;
-
 
     @Override
     public void onEnable() {
         plugin = this;
+        platformLayer = new BukkitPlatformLayer(this);
 
         PluginManager pluginManager = Bukkit.getPluginManager();
 
@@ -44,7 +52,7 @@ public final class TCDestinations extends JavaPlugin {
             plugin.getLogger().warning("Dynmap found!");
             dynmap = (DynmapAPI) pluginManager.getPlugin("dynmap");
         }
-        platformLayer = new BukkitPlatformLayer(plugin);
+
         // Export resources
         // Create default config
         InputStream config;
@@ -69,9 +77,7 @@ public final class TCDestinations extends JavaPlugin {
         // Set serverName
         serverName = getConfig().getString("Settings.ServerName");
 
-        // Register Events
-        pluginManager.registerEvents(new PlayerJoinListener(),this);
-        pluginManager.registerEvents(new TrainEnterListener(),this);
+
 
         // Initialize LocalizationManager
         localizationManager = new LocalizationManager(platformLayer, Localization.class, "en_EN", "locales");
@@ -104,6 +110,16 @@ public final class TCDestinations extends JavaPlugin {
             return;
         }
 
+        // Start Speedometer-Task
+        if (getConfig().getBoolean("Speedometer.Enabled"))
+            speedometer = new Speedometer();
+
+        // Register Events
+        pluginManager.registerEvents(new PlayerJoinListener(),this);
+        pluginManager.registerEvents(new TrainEnterListener(),this);
+        pluginManager.registerEvents(new TrainExitListener(),this);
+
+
         // Check for updates
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
@@ -135,8 +151,8 @@ public final class TCDestinations extends JavaPlugin {
         // bStats
         new Metrics(this, 17416);
 
-        String build = PluginUtil.getConfig(platformLayer).getString("build");
-        getLogger().info(plugin.getDescription().getName() + " v" + plugin.getDescription().getVersion() + " (build: " + build + ") enabled.");
+        PluginInformation pluginInformation = platformLayer.getPluginInformation();
+        getLogger().info(pluginInformation.getName() + " v" + pluginInformation.getVersion() + " (build: " + pluginInformation.getBuild() + ") enabled.");
     }
 
     @Override
@@ -157,6 +173,8 @@ public final class TCDestinations extends JavaPlugin {
     public LocalizationManager getLocalizationManager() { return localizationManager; }
 
     public DestinationStorage getDestinationStorage() { return destinationStorage; }
+
+    public Speedometer getSpeedometer() { return speedometer; }
 
     public FileConfiguration getEnterMessages() {
         return enterMessages;

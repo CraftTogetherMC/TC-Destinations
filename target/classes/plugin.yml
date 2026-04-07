@@ -1,6 +1,6 @@
 name: TCDestinations
-version: ${project.version}
-build: ${project.build.number}
+version: 1.0-BETA4
+build: NO-CI
 main: de.crafttogether.TCDestinations
 api-version: 1.21
 authors: [ J0schlZ, Ceddix, StonDragonlp ]

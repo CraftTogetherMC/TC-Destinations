@@ -246,7 +246,7 @@ public class Commands {
             final Player sender,
             @Argument(value="radius") @Range(min = "1", max = "16") Integer radius
     ) {
-        MinecartGroup group = TCHelper.getTrain(sender);
+        MinecartGroup group = TCHelper.getTrain(sender.getUniqueId());
 
         if (group == null) {
             Localization.COMMAND_NOTRAIN.message(sender.getUniqueId());
@@ -286,7 +286,7 @@ public class Commands {
     public void mobeject(
             final Player sender
     ) {
-        MinecartGroup group = TCHelper.getTrain(sender);
+        MinecartGroup group = TCHelper.getTrain(sender.getUniqueId());
 
         if (group == null) {
             Localization.COMMAND_NOTRAIN.message(sender.getUniqueId());
