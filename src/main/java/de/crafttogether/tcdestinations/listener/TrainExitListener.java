@@ -8,7 +8,7 @@ import de.crafttogether.common.util.AudienceUtil;
 import de.crafttogether.tcdestinations.speedometer.Speedometer;
 import de.crafttogether.tcdestinations.util.TCHelper;
 
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.Component;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

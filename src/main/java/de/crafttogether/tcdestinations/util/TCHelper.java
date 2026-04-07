@@ -7,8 +7,11 @@ import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainPropertiesStore;
 import de.crafttogether.common.util.AudienceUtil;
 
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.Component;
 
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
@@ -96,16 +99,25 @@ public class TCHelper {
     // Send actionBar to all passengers of a cart
     public static void sendActionbar(MinecartMember<?> member, Component message) {
         for (Object passenger : getPlayerPassengers(member)) {
-            if (passenger instanceof Player player)
-                AudienceUtil.Bukkit.audiences.player(player).sendActionBar(message);
+            if (passenger instanceof Player player) {
+                String legacy = LegacyComponentSerializer.legacySection().serialize(message);
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(legacy));
+            }
         }
     }
 
     // Send permission-based actionbar to all passengers of a cart
     public static void sendActionbar(MinecartMember<?> member, String permission, Component message) {
         for (Object passenger : getPlayerPassengers(member)) {
-            if (passenger instanceof Player player && player.hasPermission(permission))
-                AudienceUtil.Bukkit.audiences.player(player).sendActionBar(message);
+            if (passenger instanceof Player player && player.hasPermission(permission)) {
+                String legacy = LegacyComponentSerializer.legacySection().serialize(message);
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(legacy));
+                //AudienceUtil.Bukkit.audiences.player(player).sendActionBar(message);
+            }
         }
+    }
+
+    public static <__TMP__> __TMP__ sendActionbar() {
+        return null;
     }
 }

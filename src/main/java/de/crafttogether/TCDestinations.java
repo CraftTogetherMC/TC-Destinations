@@ -17,6 +17,7 @@ import de.crafttogether.tcdestinations.commands.Commands;
 import de.crafttogether.tcdestinations.destinations.DestinationStorage;
 import de.crafttogether.tcdestinations.listener.PlayerJoinListener;
 import de.crafttogether.tcdestinations.listener.TrainEnterListener;
+import de.crafttogether.tcdestinations.listener.TrainExitListener;
 import de.crafttogether.tcdestinations.speedometer.Speedometer;
 import de.crafttogether.tcdestinations.util.Util;
 import org.bukkit.Bukkit;
@@ -76,9 +77,7 @@ public final class TCDestinations extends JavaPlugin {
         // Set serverName
         serverName = getConfig().getString("Settings.ServerName");
 
-        // Register Events
-        pluginManager.registerEvents(new PlayerJoinListener(),this);
-        pluginManager.registerEvents(new TrainEnterListener(),this);
+
 
         // Initialize LocalizationManager
         localizationManager = new LocalizationManager(platformLayer, Localization.class, "en_EN", "locales");
@@ -115,6 +114,12 @@ public final class TCDestinations extends JavaPlugin {
         if (getConfig().getBoolean("Speedometer.Enabled"))
             speedometer = new Speedometer();
 
+        // Register Events
+        pluginManager.registerEvents(new PlayerJoinListener(),this);
+        pluginManager.registerEvents(new TrainEnterListener(),this);
+        pluginManager.registerEvents(new TrainExitListener(),this);
+
+
         // Check for updates
         if (!getConfig().getBoolean("Settings.Updates.Notify.DisableNotifications")
             && getConfig().getBoolean("Settings.Updates.Notify.Console"))
@@ -138,7 +143,7 @@ public final class TCDestinations extends JavaPlugin {
                     plugin.getLogger().warning("You can download it here: " + build.getUrl());
                     plugin.getLogger().warning("Version: " + build.getVersion() + " (build: " + build.getNumber() + ")");
                     plugin.getLogger().warning("FileName: " + build.getFileName() + " FileSize: " + build.getHumanReadableFileSize());
-                    plugin.getLogger().warning("You are on version: " + currentVersion + " (build: " + currentBuild + ")");
+                    plugin.getLogger().warning("You are on version: " + installedVersion + " (build: " + installedBuild + ")");
                 });
             }, plugin.getConfig().getBoolean("Settings.Updates.CheckForDevBuilds"));
         }

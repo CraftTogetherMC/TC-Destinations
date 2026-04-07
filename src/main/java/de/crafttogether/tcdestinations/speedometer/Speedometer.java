@@ -5,12 +5,12 @@ import com.bergerkiller.bukkit.common.utils.PacketUtil;
 import com.bergerkiller.bukkit.common.wrappers.ChatText;
 import com.bergerkiller.bukkit.common.wrappers.DataWatcher;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
-import com.bergerkiller.generated.net.minecraft.network.protocol.game.PacketPlayOutSpawnEntityLivingHandle;
+import com.bergerkiller.generated.net.minecraft.network.protocol.game.ClientboundAddMobPacketHandle;
 import com.bergerkiller.generated.net.minecraft.world.entity.EntityHandle;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.util.TCHelper;
 
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.Component;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -41,71 +41,47 @@ public class Speedometer implements Runnable {
             this.data = data;
         }
 
-        public static void createArmorStand(Location location, String name) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (!player.hasPermission("tcdestinations.debug"))continue;
-
-                DataWatcher metadata = new DataWatcher();
-                metadata.set(EntityHandle.DATA_NO_GRAVITY, true);
-                metadata.set(EntityHandle.DATA_CUSTOM_NAME_VISIBLE, true);
-                metadata.set(EntityHandle.DATA_CUSTOM_NAME, ChatText.fromMessage(name));
-                metadata.set(EntityHandle.DATA_FLAGS, (byte) EntityHandle.DATA_FLAG_INVISIBLE);
-
-                PacketPlayOutSpawnEntityLivingHandle spawnPacket = PacketPlayOutSpawnEntityLivingHandle.T.newHandleNull();
-                spawnPacket.setEntityId(EntityUtil.getUniqueEntityId());
-                spawnPacket.setEntityUUID(UUID.randomUUID());
-                spawnPacket.setEntityType(EntityType.ARMOR_STAND);
-                spawnPacket.setPosX(location.getX());
-                spawnPacket.setPosY(location.getY());
-                spawnPacket.setPosZ(location.getZ());
-                spawnPacket.setMotX(0.0);
-                spawnPacket.setMotY(0.0);
-                spawnPacket.setMotZ(0.0);
-                spawnPacket.setPitch(0.0f);
-                spawnPacket.setYaw(0.0f);
-                PacketUtil.sendEntityLivingSpawnPacket(player, spawnPacket, metadata);
-            }
-        }
     }
 
     public Speedometer() {
         this.trains = new ArrayList<>();
         this.debugParticles = new ArrayList<>();
+        this.task = null;
         this.task = Bukkit.getScheduler().runTaskTimer(TCDestinations.plugin, this, 20L, 5L);
     }
 
     @Override
     public void run() {
-        if (debugParticles.isEmpty())
+        if (trains.isEmpty()) {
+            stopTask();
             return;
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!p.hasPermission("tcdestinations.debug")) continue;
-
-            for (DebugParticle particle : debugParticles) {
-                if (TCHelper.getTrain(particle.trainName) == null)
-                    debugParticles.remove(particle);
-
-                else if (particle.location.getChunk().isLoaded())
-                    p.spawnParticle(particle.particle, particle.location, 1, particle.data);
-            }
         }
 
-        if (trains.isEmpty())
-            return;
+        if (!debugParticles.isEmpty()) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                if (!p.hasPermission("tcdestinations.debug")) continue;
+                debugParticles.removeIf(pa -> TCHelper.getTrain(pa.trainName) == null);
+                for (DebugParticle particle : debugParticles) {
+                    if (particle.location.getChunk().isLoaded())
+                        p.spawnParticle(particle.particle, particle.location, 1, particle.data);
+                }
+            }
+        }
 
         updateData();
         sendActionBars();
     }
 
-    public void stop() {
-        if (this.task != null)
-            this.task.cancel();
-    }
 
     public void add(String trainName) {
         if (get(trainName) != null) return;
+
+        boolean wasEmpty = trains.isEmpty();
         trains.add(new SpeedData(trainName));
+
+        if (wasEmpty) {
+            startTask();
+        }
     }
 
     public SpeedData get(String trainName) {
@@ -121,16 +97,21 @@ public class Speedometer implements Runnable {
     }
 
     public void remove(String trainName) {
-        SpeedData data = get(trainName);
-        if (data == null) return;
+        SpeedData speedData = get(trainName);
+        if (speedData == null) {
+            return;
+        }
 
         // Clear actionbar for all players
         MinecartGroup train = TCHelper.getTrain(trainName);
 
         if (train != null)
-            TCHelper.sendActionbar(train, Component.empty());
+            TCHelper.sendActionbar(train,Component.empty());
+        trains.remove(speedData);
 
-        trains.remove(data);
+        if (trains.isEmpty()) {
+            stopTask();
+        }
     }
 
     public void sendActionBars() {
@@ -138,7 +119,7 @@ public class Speedometer implements Runnable {
             MinecartGroup group = TCHelper.getTrain(data.getTrainName());
 
             if (group == null)
-                return;
+                continue;
             
             Component message;
             String destinationName = data.getDestinationName();
@@ -160,8 +141,6 @@ public class Speedometer implements Runnable {
                     else
                         message = Component.text(String.format("§e%.1f §6Blöcke/s §8| §e%.0f §6Blöcke bis \"§e%s\"", realVelocity, distance, destinationName));
                 }
-
-                else
                     message = Component.text(String.format("§e%.1f §6Blöcke/s", realVelocity));
             }
 
@@ -169,7 +148,6 @@ public class Speedometer implements Runnable {
                 message = Component.text(String.format("§e%.0f §6Blöcke bis \"%s\"", distance, destinationName));
             else
                 message = Component.text("");
-
             TCHelper.sendActionbar(group, "tcdestinations.speedometer", message);
         }
     }
@@ -181,5 +159,20 @@ public class Speedometer implements Runnable {
 
     public List<DebugParticle> getDebugParticles() {
         return debugParticles;
+    }
+
+    private void startTask() {
+        if (task != null && !task.isCancelled()) {
+            return;
+        }
+
+        task = Bukkit.getScheduler().runTaskTimer(TCDestinations.plugin, this, 0L, 10L);
+    }
+
+    private void stopTask() {
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
     }
 }

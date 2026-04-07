@@ -2,23 +2,22 @@ package de.crafttogether.tcdestinations.speedometer;
 
 import com.bergerkiller.bukkit.tc.TrainCarts;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.components.RailPath;
 import com.bergerkiller.bukkit.tc.controller.components.RailState;
-import com.bergerkiller.bukkit.tc.pathfinding.PathConnection;
-import com.bergerkiller.bukkit.tc.pathfinding.PathNode;
-import com.bergerkiller.bukkit.tc.pathfinding.PathProvider;
-import com.bergerkiller.bukkit.tc.pathfinding.PathRailInfo;
+import com.bergerkiller.bukkit.tc.pathfinding.*;
 import com.bergerkiller.bukkit.tc.rails.RailLookup;
 import com.bergerkiller.bukkit.tc.utils.TrackMovingPoint;
 
+import com.bergerkiller.bukkit.tc.utils.TrackWalkingPoint;
 import de.crafttogether.TCDestinations;
 import de.crafttogether.tcdestinations.util.TCHelper;
 import de.crafttogether.tcdestinations.util.Util;
 
-import de.crafttogether.common.shaded.net.kyori.adventure.text.Component;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.event.ClickEvent;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.event.HoverEvent;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.format.NamedTextColor;
-import de.crafttogether.common.shaded.net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -48,9 +47,10 @@ public class SpeedData {
         this.destinationName = train.getProperties().getDestination();
         this.lastLoc = train.head().getBlock().getLocation();
         this.direction = train.head().getDirection();
+        this.multiplier = 1;
 
-        calcDistance(train);
         calcVelocity(train);
+        calcDistance(train);
     }
 
     public String getTrainName() {
@@ -124,21 +124,21 @@ public class SpeedData {
         PathProvider provider = TrainCarts.plugin.getPathProvider();
         walker.setLoopFilter(true);
         double distance = 0;
+        PathRoutingHandler.PathRouteEvent routeEvent = getRouteEvent(provider, walker, distance);
 
         // Walk until we arrive the first node
-        while (provider.getRailInfo(walker.getState()) == PathRailInfo.NONE && walker.hasNext()) {
+        while (!routeEvent.isBlocked() && routeEvent.getLastSetNode() == null && walker.hasNext()) {
             walker.next();
             distance++;
+            routeEvent = getRouteEvent(provider, walker, distance);
 
-            if (findStation) {
-                Location effectLocation = walker.getState().positionBlock().getLocation().add(0, 1, 0);
-                TCDestinations.plugin.getSpeedometer().getDebugParticles().add(new Speedometer.DebugParticle(trainName, effectLocation, Particle.BLOCK_MARKER, Material.GREEN_STAINED_GLASS.createBlockData()));
-            }
+            //if (findStation) {
+                //Location effectLocation = walker.getState().positionBlock().getLocation().add(0, 1, 0);
+              //  TCDestinations.plugin.getSpeedometer().getDebugParticles().add(new Speedometer.DebugParticle(trainName, effectLocation, Particle.BLOCK_MARKER, Material.GREEN_STAINED_GLASS.createBlockData()));
+            //}
         }
 
-        if (!walker.hasNext()
-                || provider.getRailInfo(walker.getState()) == PathRailInfo.BLOCKED
-                || provider.getRailInfo(walker.getState()) != PathRailInfo.NODE) {
+        if (!walker.hasNext()|| routeEvent.isBlocked() || routeEvent.getLastSetNode() == null) {
             return -1;
         }
 
@@ -146,7 +146,6 @@ public class SpeedData {
         PathNode node = provider.getWorld(state.railWorld()).getNodeAtRail(state.railBlock());
         PathNode destination = node.getWorld().getNodeByName(this.destinationName);
 
-        Speedometer.DebugParticle.createArmorStand(node.location.getLocation().add(0, -2, 0), node.getDisplayName() + " (first node)");
 
         // Walk from node to destination
         if (destination != null && node != destination) {
@@ -170,7 +169,7 @@ public class SpeedData {
                     Util.debug(trainName, walkerDirection.name());
 
                     // Check 3 last connections for station
-                    if (visitedConnections < 3 && connections[i -1] != null) {
+                    if (visitedConnections < 3 && i - 1 >= 0 && connections[i - 1] != null) {
                         Component from = Component.text(connections[i -1].destination.getDisplayName())
                                 .clickEvent(ClickEvent.suggestCommand("/cmi tppos " + connections[i -1].destination.location.x + " " + connections[i -1].destination.location.y + " " + connections[i -1].destination.location.z))
                                 .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("*klick*")))
@@ -255,7 +254,7 @@ public class SpeedData {
             return -1;
 
         // Mark walked path
-        TCDestinations.plugin.getSpeedometer().getDebugParticles().addAll(particles);
+        //TCDestinations.plugin.getSpeedometer().getDebugParticles().addAll(particles);
 
         return distance;
     }
@@ -279,7 +278,7 @@ public class SpeedData {
 
             // Spawn markerParticle (debug)
             Location effectLocation = sign.railBlock.getLocation().add(0, 1, 0);
-            TCDestinations.plugin.getSpeedometer().getDebugParticles().add(new Speedometer.DebugParticle(trainName, effectLocation, Particle.BLOCK_MARKER, Material.BARRIER.createBlockData()));
+            //TCDestinations.plugin.getSpeedometer().getDebugParticles().add(new Speedometer.DebugParticle(trainName, effectLocation, Particle.BLOCK_MARKER, Material.BARRIER.createBlockData()));
 
             return true;
         }
@@ -296,7 +295,7 @@ public class SpeedData {
 
         // Stop calculation if train no longer exists
         if (train == null) {
-            TCDestinations.plugin.getSpeedometer().remove(trainName);
+            //TCDestinations.plugin.getSpeedometer().remove(trainName);
             return;
         }
 
@@ -334,5 +333,10 @@ public class SpeedData {
             TCHelper.sendMessage(train, String.format("Dein Ziel %s ist %.1f Blöcke entfernt.", this.destinationName, this.distance));
         }
         */
+    }
+    private PathRoutingHandler.PathRouteEvent getRouteEvent(PathProvider provider, TrackMovingPoint walker, double distance) {
+        RailState state = walker.getState();
+        RailPath path = state.loadRailLogic().getPath();
+        return provider.handleRouting(state, path, distance);
     }
 }
