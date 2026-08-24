@@ -1,0 +1,25 @@
+name: TCDestinations
+version: ${project.version}
+main: de.crafttogether.TCDestinations
+description: TrainCarts-Addon which allows you to manage destinations in a more advanced way.
+api-version: "1.21"
+authors:
+  - J0schlZ
+  - Ceddix
+  - StonDragonlp
+website: https://github.com/CraftTogetherMC
+
+dependencies:
+  server:
+    CTCommonsBukkit:
+      required: true
+      load: BEFORE
+    BKCommonLib:
+      required: true
+      load: BEFORE
+    Train_Carts:
+      required: true
+      load: BEFORE
+    dynmap:
+      required: false
+      load: BEFORE

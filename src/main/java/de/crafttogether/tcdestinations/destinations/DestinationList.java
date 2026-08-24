@@ -149,7 +149,7 @@ public class DestinationList {
                 }
 
                 btnDestination = btnDestination
-                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + plugin.getCommandManager().getConfig().get("commands.destination") + " " + dest.getName() + (duplicates.size() > 1 ? " " + (dest.getServer()) : "")))
+                        .clickEvent(ClickEvent.runCommand("/" + plugin.getCommandManager().getConfig().get("commands.destination") + " " + dest.getName() + (duplicates.size() > 1 ? " " + (dest.getServer()) : "")))
                         .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
                 // Append teleport-button
