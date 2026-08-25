@@ -44,9 +44,29 @@ public final class TCDestinations extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
-        platformLayer = new BukkitPlatformLayer(this);
 
         PluginManager pluginManager = Bukkit.getPluginManager();
+
+        /* Check dependencies before using any of their classes */
+        if (!pluginManager.isPluginEnabled("CTCommonsBukkit")) {
+            plugin.getLogger().severe("[TCDestinations] Required dependency 'CTCommonsBukkit' was not found or is not enabled! Disabling plugin.");
+            pluginManager.disablePlugin(plugin);
+            return;
+        }
+
+        if (!pluginManager.isPluginEnabled("BKCommonLib")) {
+            plugin.getLogger().severe("[TCDestinations] Required dependency 'BKCommonLib' was not found or is not enabled! Disabling plugin.");
+            pluginManager.disablePlugin(plugin);
+            return;
+        }
+
+        if (!pluginManager.isPluginEnabled("Train_Carts")) {
+            plugin.getLogger().severe("[TCDestinations] Required dependency 'Train_Carts' was not found or is not enabled! Disabling plugin.");
+            pluginManager.disablePlugin(plugin);
+            return;
+        }
+
+        platformLayer = new BukkitPlatformLayer(this);
 
         if (pluginManager.isPluginEnabled("dynmap")) {
             plugin.getLogger().warning("Dynmap found!");
